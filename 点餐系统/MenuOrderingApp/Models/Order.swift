@@ -33,4 +33,14 @@ class OrderManager: ObservableObject {
         
         completedOrders.append(newOrder)
     }
+    
+    // 删除指定订单
+    func deleteOrder(orderId: UUID) {
+        completedOrders.removeAll { $0.id == orderId }
+    }
+    
+    // 删除指定索引的订单
+    func deleteOrder(at indexSet: IndexSet) {
+        completedOrders.remove(atOffsets: indexSet)
+    }
 } 

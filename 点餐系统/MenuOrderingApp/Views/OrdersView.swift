@@ -15,14 +15,33 @@ struct OrdersView: View {
                         .listRowInsets(EdgeInsets())
                 } else {
                     ForEach(orderManager.completedOrders.sorted(by: { $0.timestamp > $1.timestamp })) { order in
-                        NavigationLink(destination: OrderDetailView(order: order)) {
+                        NavigationLink(destination: OrderDetailView(order: order, orderManager: orderManager)) {
                             OrderRow(order: order)
                         }
                     }
+                    .onDelete(perform: deleteOrders)
                 }
             }
             .listStyle(InsetGroupedListStyle())
             .navigationBarTitle("订单列表", displayMode: .large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    EditButton()
+                }
+            }
+        }
+    }
+    
+    func deleteOrders(at offsets: IndexSet) {
+        // 获取排序后的订单
+        let sortedOrders = orderManager.completedOrders.sorted(by: { $0.timestamp > $1.timestamp })
+        
+        // 找出要删除的订单ID
+        let orderIdsToDelete = offsets.map { sortedOrders[$0].id }
+        
+        // 依次删除每个订单
+        for orderId in orderIdsToDelete {
+            orderManager.deleteOrder(orderId: orderId)
         }
     }
 }
@@ -72,10 +91,14 @@ struct OrderRow: View {
 
 struct OrderDetailView: View {
     let order: Order
+    let orderManager: OrderManager
     let dateFormatter: DateFormatter
+    @Environment(\.presentationMode) var presentationMode
+    @State private var showingDeleteAlert = false
     
-    init(order: Order) {
+    init(order: Order, orderManager: OrderManager) {
         self.order = order
+        self.orderManager = orderManager
         
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -152,8 +175,35 @@ struct OrderDetailView: View {
                         .foregroundColor(.blue)
                 }
             }
+            
+            // 添加删除订单按钮
+            Section {
+                Button(action: {
+                    showingDeleteAlert = true
+                }) {
+                    HStack {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                        Text("删除订单")
+                            .foregroundColor(.red)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                }
+            }
         }
         .listStyle(InsetGroupedListStyle())
         .navigationBarTitle("订单详情", displayMode: .inline)
+        .alert(isPresented: $showingDeleteAlert) {
+            Alert(
+                title: Text("确认删除"),
+                message: Text("您确定要删除此订单吗？此操作无法撤销。"),
+                primaryButton: .destructive(Text("删除")) {
+                    // 删除订单并返回上一级页面
+                    orderManager.deleteOrder(orderId: order.id)
+                    presentationMode.wrappedValue.dismiss()
+                },
+                secondaryButton: .cancel(Text("取消"))
+            )
+        }
     }
 } 

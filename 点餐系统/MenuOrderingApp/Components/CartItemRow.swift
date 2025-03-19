@@ -15,76 +15,96 @@ struct CartItemRow: View {
     }
     
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            // Item information
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.menuItem.name)
-                    .font(.headline)
-                    .lineLimit(2)
-                
-                Text("$\(String(format: "%.2f", item.menuItem.price))")
-                    .font(.subheadline)
-                    .foregroundColor(.blue)
-                
-                if !item.notes.isEmpty {
-                    Text("备注: \(item.notes)")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                        .lineLimit(1)
-                }
-            }
-            
-            Spacer()
-            
-            // 重新实现数量控制UI
-            HStack(spacing: 16) {
-                // 减号按钮 - 减小数量
-                Button {
-                    let newQuantity = max(0, localQuantity - 1)
-                    if newQuantity == 0 {
-                        cartManager.removeItem(item: item)
-                    } else {
-                        // 禁用onReceive的监听，防止状态被重置
-                        // 直接更新CartManager
-                        cartManager.updateItemQuantity(item: item, quantity: newQuantity)
-                        // 更新后再设置本地状态
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            localQuantity = newQuantity
-                        }
-                    }
-                } label: {
-                    Image(systemName: "minus.circle.fill")
-                        .resizable()
-                        .frame(width: 28, height: 28)
-                        .foregroundColor(.blue)
-                }
-                .buttonStyle(BorderlessButtonStyle()) // 确保按钮可以独立点击
-                
-                // 显示数量
-                Text("\(localQuantity)")
-                    .font(.headline)
-                    .frame(minWidth: 30)
-                    .multilineTextAlignment(.center)
-                
-                // 加号按钮 - 增加数量
-                Button {
-                    let newQuantity = localQuantity + 1
-                    // 直接更新CartManager，不依赖本地状态同步
-                    cartManager.updateItemQuantity(item: item, quantity: newQuantity)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 12) {
+                // Item information
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.menuItem.name)
+                        .font(.headline)
+                        .lineLimit(2)
                     
-                    // 直接设置本地状态，不等待数据同步
-                    localQuantity = newQuantity
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .resizable()
-                        .frame(width: 28, height: 28)
+                    Text("$\(String(format: "%.2f", item.menuItem.price))")
+                        .font(.subheadline)
                         .foregroundColor(.blue)
+                    
+                    if !item.notes.isEmpty {
+                        Text("备注: \(item.notes)")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .lineLimit(1)
+                    }
                 }
-                .buttonStyle(BorderlessButtonStyle()) // 确保按钮可以独立点击
+                
+                Spacer()
+                
+                // 重新实现数量控制UI
+                HStack(spacing: 16) {
+                    // 减号按钮 - 减小数量
+                    Button {
+                        let newQuantity = max(0, localQuantity - 1)
+                        if newQuantity == 0 {
+                            cartManager.removeItem(item: item)
+                        } else {
+                            // 禁用onReceive的监听，防止状态被重置
+                            // 直接更新CartManager
+                            cartManager.updateItemQuantity(item: item, quantity: newQuantity)
+                            // 更新后再设置本地状态
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                localQuantity = newQuantity
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "minus.circle.fill")
+                            .resizable()
+                            .frame(width: 28, height: 28)
+                            .foregroundColor(.blue)
+                    }
+                    .buttonStyle(BorderlessButtonStyle()) // 确保按钮可以独立点击
+                    
+                    // 显示数量
+                    Text("\(localQuantity)")
+                        .font(.headline)
+                        .frame(minWidth: 30)
+                        .multilineTextAlignment(.center)
+                    
+                    // 加号按钮 - 增加数量
+                    Button {
+                        let newQuantity = localQuantity + 1
+                        // 直接更新CartManager，不依赖本地状态同步
+                        cartManager.updateItemQuantity(item: item, quantity: newQuantity)
+                        
+                        // 直接设置本地状态，不等待数据同步
+                        localQuantity = newQuantity
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .resizable()
+                            .frame(width: 28, height: 28)
+                            .foregroundColor(.blue)
+                    }
+                    .buttonStyle(BorderlessButtonStyle()) // 确保按钮可以独立点击
+                }
+                .padding(10)
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
             }
-            .padding(10)
-            .background(Color(.systemGray6))
-            .cornerRadius(8)
+            
+            // 添加明显的备注按钮
+            Button(action: {
+                showingNotesEditor = true
+            }) {
+                HStack {
+                    Image(systemName: "pencil")
+                        .font(.subheadline)
+                    Text(item.notes.isEmpty ? "添加备注" : "修改备注")
+                        .font(.subheadline)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 6)
+                .padding(.horizontal, 12)
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
+            }
+            .buttonStyle(BorderlessButtonStyle())
         }
         .padding(.vertical, 8)
         .contextMenu {
