@@ -33,7 +33,7 @@ struct CartView: View {
                             Spacer()
                             
                             HStack {
-                                Text("\(cartManager.tableNumber)")
+                                Text(cartManager.tableNumber.formatted)
                                     .font(.headline)
                                 
                                 Button(action: {
@@ -97,7 +97,7 @@ struct CartView: View {
             .alert(isPresented: $showingConfirmation) {
                 Alert(
                     title: Text("确认订单"),
-                    message: Text("餐桌号: \(cartManager.tableNumber)\n总价: $\(String(format: "%.2f", cartManager.total))"),
+                    message: Text("餐桌号: \(cartManager.tableNumber.formatted)\n总价: $\(String(format: "%.2f", cartManager.total))"),
                     primaryButton: .default(Text("确认")) {
                         orderManager.addOrder(from: cartManager)
                         cartManager.clearCart()
@@ -113,37 +113,75 @@ struct CartView: View {
 }
 
 struct TableSelectorView: View {
-    @Binding var tableNumber: Int
+    @Binding var tableNumber: TableNumber
     @Environment(\.presentationMode) var presentationMode
-    @State private var selectedTable: Int
+    @State private var selectedArea: String
+    @State private var selectedNumber: Int
     
-    init(tableNumber: Binding<Int>) {
+    // 可用的区域和对应的桌号范围
+    let availableAreas = ["A", "B", "C"]
+    let numberRanges = [
+        "A": 1...4,
+        "B": 1...4,
+        "C": 1...5
+    ]
+    
+    init(tableNumber: Binding<TableNumber>) {
         self._tableNumber = tableNumber
-        self._selectedTable = State(initialValue: tableNumber.wrappedValue)
+        self._selectedArea = State(initialValue: tableNumber.wrappedValue.area)
+        self._selectedNumber = State(initialValue: tableNumber.wrappedValue.number)
     }
     
     var body: some View {
         NavigationView {
-            VStack {
-                Picker("餐桌号", selection: $selectedTable) {
-                    ForEach(1...30, id: \.self) { number in
-                        Text("\(number)").tag(number)
+            VStack(spacing: 20) {
+                // 区域选择
+                Section(header: Text("选择区域").font(.headline)) {
+                    Picker("区域", selection: $selectedArea) {
+                        ForEach(availableAreas, id: \.self) { area in
+                            Text("区域 \(area)").tag(area)
+                        }
                     }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .padding(.horizontal)
                 }
-                .pickerStyle(WheelPickerStyle())
+                
+                // 桌号选择
+                Section(header: Text("选择桌号").font(.headline)) {
+                    Picker("桌号", selection: $selectedNumber) {
+                        ForEach(Array(numberRanges[selectedArea] ?? 1...5), id: \.self) { number in
+                            Text("\(number)").tag(number)
+                        }
+                    }
+                    .pickerStyle(WheelPickerStyle())
+                }
+                
+                // 预览选择的餐桌号
+                Text("当前选择: \(selectedArea)\(selectedNumber)")
+                    .font(.title2)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
                 
                 Spacer()
             }
+            .padding(.top, 20)
             .navigationBarTitle("选择餐桌", displayMode: .inline)
             .navigationBarItems(
                 leading: Button("取消") {
                     presentationMode.wrappedValue.dismiss()
                 },
                 trailing: Button("确定") {
-                    tableNumber = selectedTable
+                    tableNumber = TableNumber(area: selectedArea, number: selectedNumber)
                     presentationMode.wrappedValue.dismiss()
                 }
             )
+            // 当区域变化时，确保桌号在有效范围内
+            .onChange(of: selectedArea) { newArea in
+                if let range = numberRanges[newArea], !range.contains(selectedNumber) {
+                    selectedNumber = range.lowerBound
+                }
+            }
         }
     }
 } 

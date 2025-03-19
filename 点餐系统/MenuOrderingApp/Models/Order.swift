@@ -2,14 +2,14 @@ import Foundation
 
 struct Order: Identifiable {
     let id = UUID()
-    let tableNumber: Int
+    let tableNumber: TableNumber
     let items: [CartItem]
     let subtotal: Double
     let tax: Double
     let total: Double
     let timestamp: Date
     
-    init(tableNumber: Int, items: [CartItem], subtotal: Double, tax: Double) {
+    init(tableNumber: TableNumber, items: [CartItem], subtotal: Double, tax: Double) {
         self.tableNumber = tableNumber
         self.items = items
         self.subtotal = subtotal

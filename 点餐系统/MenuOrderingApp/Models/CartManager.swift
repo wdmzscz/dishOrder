@@ -1,9 +1,23 @@
 import Foundation
 import SwiftUI
 
+// 定义餐桌号码结构
+struct TableNumber: Equatable, Hashable {
+    var area: String  // 区域: A, B, C
+    var number: Int   // 号码: 1-5
+    
+    // 格式化为显示用的字符串
+    var formatted: String {
+        return "\(area)\(number)"
+    }
+    
+    // 默认餐桌
+    static let defaultTable = TableNumber(area: "A", number: 1)
+}
+
 class CartManager: ObservableObject {
     @Published var items: [CartItem] = []
-    @Published var tableNumber: Int = 1
+    @Published var tableNumber: TableNumber = TableNumber.defaultTable
     
     // Ontario tax rates
     private let hstRate = 0.13 // 13% HST in Ontario

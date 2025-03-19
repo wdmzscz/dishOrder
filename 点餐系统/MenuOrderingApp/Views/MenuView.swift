@@ -127,7 +127,7 @@ struct MenuView: View {
                         showingTableSelector = true
                     }) {
                         HStack {
-                            Text("餐桌 #\(cartManager.tableNumber)")
+                            Text("餐桌 \(cartManager.tableNumber.formatted)")
                             Image(systemName: "chevron.down")
                         }
                     }

@@ -62,7 +62,7 @@ struct OrderRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text("餐桌 #\(order.tableNumber)")
+                Text("餐桌 \(order.tableNumber.formatted)")
                     .font(.headline)
                 
                 Spacer()
@@ -112,7 +112,7 @@ struct OrderDetailView: View {
                 HStack {
                     Text("餐桌号")
                     Spacer()
-                    Text("#\(order.tableNumber)")
+                    Text("\(order.tableNumber.formatted)")
                         .font(.headline)
                 }
                 
