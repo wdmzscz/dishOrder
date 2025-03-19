@@ -40,10 +40,19 @@ class CartManager: ObservableObject {
         }
     }
     
-    // Update item quantity
+    // Update item quantity - 强制更新数量，不使用max函数
     func updateItemQuantity(item: CartItem, quantity: Int) {
         if let index = items.firstIndex(where: { $0.id == item.id }) {
-            items[index].quantity = max(1, quantity) // Ensure quantity is at least 1
+            // 直接设置数量，不限制最小值
+            items[index].quantity = quantity
+            
+            // 如果修改后数量为0或负数，删除该项
+            if items[index].quantity <= 0 {
+                removeItem(item: items[index])
+            }
+            
+            // 强制发送变更通知
+            objectWillChange.send()
         }
     }
     
