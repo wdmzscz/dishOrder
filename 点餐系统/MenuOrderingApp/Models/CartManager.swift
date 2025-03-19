@@ -38,19 +38,20 @@ class CartManager: ObservableObject {
     }
     
     // Add item to cart
-    func addItem(menuItem: MenuItem, quantity: Int = 1, notes: String = "") {
+    func addItem(menuItem: MenuItem, quantity: Int = 1, notes: String = "", extraCharge: Double = 0.0, substitution: String = "") {
         // Check if item already exists in cart
-        if let index = items.firstIndex(where: { $0.menuItem.id == menuItem.id }) {
-            // If notes are different, add as a new item
-            if items[index].notes != notes {
-                items.append(CartItem(menuItem: menuItem, quantity: quantity, notes: notes))
-            } else {
-                // Otherwise update quantity
-                items[index].quantity += quantity
-            }
+        if let index = items.firstIndex(where: { $0.menuItem.id == menuItem.id && $0.notes == notes && $0.extraCharge == extraCharge && $0.substitution == substitution }) {
+            // If all properties match, update quantity
+            items[index].quantity += quantity
         } else {
             // Add new item to cart
-            items.append(CartItem(menuItem: menuItem, quantity: quantity, notes: notes))
+            items.append(CartItem(
+                menuItem: menuItem, 
+                quantity: quantity, 
+                notes: notes,
+                extraCharge: extraCharge,
+                substitution: substitution
+            ))
         }
     }
     
@@ -77,6 +78,14 @@ class CartManager: ObservableObject {
         }
     }
     
+    // Update item extra charge
+    func updateItemExtraCharge(item: CartItem, extraCharge: Double, substitution: String) {
+        if let index = items.firstIndex(where: { $0.id == item.id }) {
+            items[index].extraCharge = extraCharge
+            items[index].substitution = substitution
+        }
+    }
+    
     // Remove item from cart
     func removeItem(item: CartItem) {
         items.removeAll { $0.id == item.id }
@@ -85,5 +94,29 @@ class CartManager: ObservableObject {
     // Clear cart
     func clearCart() {
         items.removeAll()
+    }
+    
+    // Add custom dish
+    func addCustomDish(name: String, price: Double, quantity: Int = 1, notes: String = "") {
+        // Create a custom menu item
+        let customItem = MenuItem(
+            id: UUID().uuidString,
+            code: "CUSTOM",
+            name: name,
+            price: .fixed(price),
+            category: .custom,
+            subcategory: nil,
+            description: "自定义菜品",
+            items: nil,
+            isSpicy: false
+        )
+        
+        // Add to cart
+        addItem(menuItem: customItem, quantity: quantity, notes: notes)
+    }
+    
+    // Calculate total extra charge
+    func calculateTotalExtraCharge() -> Double {
+        return items.map { $0.extraCharge * Double($0.quantity) }.reduce(0, +)
     }
 } 

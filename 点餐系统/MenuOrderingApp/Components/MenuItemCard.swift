@@ -86,6 +86,9 @@ struct MenuItemCard: View {
 struct ComboDetailsView: View {
     let menuItem: MenuItem
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var cartManager: CartManager
+    @State private var showingSubstitutionSheet = false
+    @State private var selectedItemToSubstitute = ""
     
     var body: some View {
         NavigationView {
@@ -118,8 +121,33 @@ struct ComboDetailsView: View {
                                 
                                 Text(item)
                                     .font(.body)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    selectedItemToSubstitute = item
+                                    showingSubstitutionSheet = true
+                                }) {
+                                    Text("更换")
+                                        .font(.caption)
+                                        .foregroundColor(.blue)
+                                }
                             }
                             .padding(.vertical, 4)
+                        }
+                    }
+                }
+                
+                Section {
+                    Button(action: {
+                        cartManager.addItem(menuItem: menuItem)
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        HStack {
+                            Spacer()
+                            Text("添加到购物车")
+                                .fontWeight(.semibold)
+                            Spacer()
                         }
                     }
                 }
@@ -127,6 +155,69 @@ struct ComboDetailsView: View {
             .listStyle(InsetGroupedListStyle())
             .navigationBarTitle("套餐详情", displayMode: .inline)
             .navigationBarItems(trailing: Button("关闭") {
+                presentationMode.wrappedValue.dismiss()
+            })
+            .sheet(isPresented: $showingSubstitutionSheet) {
+                SubstitutionView(
+                    originalDish: selectedItemToSubstitute,
+                    menuItem: menuItem,
+                    dismissAction: { presentationMode.wrappedValue.dismiss() }
+                )
+                .environmentObject(cartManager)
+            }
+        }
+    }
+}
+
+// 菜品更换视图
+struct SubstitutionView: View {
+    let originalDish: String
+    let menuItem: MenuItem
+    let dismissAction: () -> Void
+    @EnvironmentObject var cartManager: CartManager
+    @Environment(\.presentationMode) var presentationMode
+    
+    @State private var newDish = ""
+    @State private var extraCharge: String = "0.00"
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("更换菜品")) {
+                    TextField("原菜品", text: .constant(originalDish))
+                        .disabled(true)
+                    
+                    TextField("新菜品", text: $newDish)
+                        .disableAutocorrection(true)
+                    
+                    TextField("补差价($)", text: $extraCharge)
+                        .keyboardType(.decimalPad)
+                }
+                
+                Section {
+                    Button(action: {
+                        let charge = Double(extraCharge) ?? 0.0
+                        let substitutionText = "更换: \(originalDish) → \(newDish)"
+                        
+                        cartManager.addItem(
+                            menuItem: menuItem, 
+                            notes: "菜品更换",
+                            extraCharge: charge,
+                            substitution: substitutionText
+                        )
+                        
+                        presentationMode.wrappedValue.dismiss()
+                        dismissAction()
+                    }) {
+                        Text("确认更换并添加到购物车")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .foregroundColor(.blue)
+                    }
+                    .disabled(newDish.isEmpty)
+                }
+            }
+            .navigationBarTitle("菜品更换", displayMode: .inline)
+            .navigationBarItems(trailing: Button("取消") {
                 presentationMode.wrappedValue.dismiss()
             })
         }

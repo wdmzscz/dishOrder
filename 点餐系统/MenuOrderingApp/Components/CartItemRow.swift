@@ -4,14 +4,19 @@ struct CartItemRow: View {
     @ObservedObject var cartManager: CartManager
     let item: CartItem
     @State private var showingNotesEditor = false
+    @State private var showingExtraChargeEditor = false
     @State private var notes: String
     @State private var localQuantity: Int
+    @State private var extraCharge: String
+    @State private var substitutionReason: String
     
     init(cartManager: CartManager, item: CartItem) {
         self.cartManager = cartManager
         self.item = item
         self._notes = State(initialValue: item.notes)
         self._localQuantity = State(initialValue: item.quantity)
+        self._extraCharge = State(initialValue: String(format: "%.2f", item.extraCharge))
+        self._substitutionReason = State(initialValue: item.substitution)
     }
     
     var body: some View {
@@ -32,9 +37,51 @@ struct CartItemRow: View {
                         }
                     }
                     
-                    Text(item.menuItem.displayPrice)
-                        .font(.subheadline)
-                        .foregroundColor(.blue)
+                    // 只有当不是纯补差价项目时才显示基础价格
+                    if item.menuItem.code != "EXTRA" {
+                        Text(item.menuItem.displayPrice)
+                            .font(.subheadline)
+                            .foregroundColor(.blue)
+                    }
+                    
+                    // 显示替换信息
+                    if !item.substitution.isEmpty {
+                        Text(item.substitution)
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                            .lineLimit(2)
+                    }
+                    
+                    // 显示额外收费
+                    if item.extraCharge != 0 {
+                        HStack {
+                            if item.extraCharge > 0 {
+                                Text("补差价: +$\(String(format: "%.2f", item.extraCharge))")
+                                    .font(.caption)
+                                    .foregroundColor(.red)
+                                    .padding(.vertical, 2)
+                                    .padding(.horizontal, 6)
+                                    .background(Color.red.opacity(0.1))
+                                    .cornerRadius(4)
+                            } else {
+                                Text("减价: -$\(String(format: "%.2f", abs(item.extraCharge)))")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                                    .padding(.vertical, 2)
+                                    .padding(.horizontal, 6)
+                                    .background(Color.green.opacity(0.1))
+                                    .cornerRadius(4)
+                            }
+                            
+                            Button(action: {
+                                showingExtraChargeEditor = true
+                            }) {
+                                Image(systemName: "pencil")
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                            }
+                        }
+                    }
                     
                     if !item.notes.isEmpty {
                         Text("备注: \(item.notes)")
@@ -122,23 +169,59 @@ struct CartItemRow: View {
                 .padding(.top, 2)
             }
             
-            // 添加明显的备注按钮
-            Button(action: {
-                showingNotesEditor = true
-            }) {
-                HStack {
-                    Image(systemName: "pencil")
-                        .font(.subheadline)
-                    Text(item.notes.isEmpty ? "添加备注" : "修改备注")
-                        .font(.subheadline)
+            // 操作按钮行
+            HStack(spacing: 12) {
+                // 添加备注按钮
+                Button(action: {
+                    showingNotesEditor = true
+                }) {
+                    HStack {
+                        Image(systemName: "pencil")
+                            .font(.caption)
+                        Text(item.notes.isEmpty ? "添加备注" : "修改备注")
+                            .font(.caption)
+                    }
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 6)
-                .padding(.horizontal, 12)
-                .background(Color(.systemGray6))
-                .cornerRadius(8)
+                .buttonStyle(BorderlessButtonStyle())
+                
+                // 补差价按钮 - 新增
+                Button(action: {
+                    showingExtraChargeEditor = true
+                }) {
+                    HStack {
+                        Image(systemName: "dollarsign.circle")
+                            .font(.caption)
+                        Text(item.extraCharge != 0 ? "修改差价" : "调整价格")
+                            .font(.caption)
+                    }
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 10)
+                    .background(Color.orange.opacity(0.15))
+                    .foregroundColor(.orange)
+                    .cornerRadius(8)
+                }
+                .buttonStyle(BorderlessButtonStyle())
+                
+                Spacer()
+                
+                // 删除按钮
+                Button(action: {
+                    cartManager.removeItem(item: item)
+                }) {
+                    Image(systemName: "trash")
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 10)
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(8)
+                }
+                .buttonStyle(BorderlessButtonStyle())
             }
-            .buttonStyle(BorderlessButtonStyle())
         }
         .padding(.vertical, 8)
         .contextMenu {
@@ -146,6 +229,12 @@ struct CartItemRow: View {
                 showingNotesEditor = true
             }) {
                 Label("添加备注", systemImage: "pencil")
+            }
+            
+            Button(action: {
+                showingExtraChargeEditor = true
+            }) {
+                Label("补差价", systemImage: "dollarsign.circle")
             }
             
             Button(action: {
@@ -177,12 +266,64 @@ struct CartItemRow: View {
                 )
             }
         }
+        .sheet(isPresented: $showingExtraChargeEditor) {
+            NavigationView {
+                Form {
+                    Section(header: Text("调整价格")) {
+                        TextField("金额 (正数加价/负数减价)", text: $extraCharge)
+                            .keyboardType(.decimalPad)
+                        
+                        HStack {
+                            Button(action: {
+                                if let current = Double(extraCharge) {
+                                    extraCharge = String(format: "%.2f", -current)
+                                } else if extraCharge.isEmpty {
+                                    extraCharge = "0.00"
+                                }
+                            }) {
+                                Text("正负切换")
+                                    .font(.caption)
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 10)
+                                    .background(Color.blue.opacity(0.1))
+                                    .foregroundColor(.blue)
+                                    .cornerRadius(8)
+                            }
+                            
+                            Spacer()
+                            
+                            Text("提示: 正数表示加价，负数表示减价")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        .padding(.top, 4)
+                        
+                        TextField("原因说明 (例：更换菜品)", text: $substitutionReason)
+                            .disableAutocorrection(true)
+                    }
+                }
+                .navigationBarTitle("调整价格", displayMode: .inline)
+                .navigationBarItems(
+                    leading: Button("取消") {
+                        showingExtraChargeEditor = false
+                    },
+                    trailing: Button("保存") {
+                        let charge = Double(extraCharge) ?? 0.0
+                        cartManager.updateItemExtraCharge(
+                            item: item, 
+                            extraCharge: charge,
+                            substitution: substitutionReason
+                        )
+                        showingExtraChargeEditor = false
+                    }
+                )
+            }
+        }
         // 只在初始加载时同步一次数据
         .onAppear {
             if let updatedItem = cartManager.items.first(where: { $0.id == item.id }) {
                 self.localQuantity = updatedItem.quantity
             }
         }
-        // 移除onReceive监听，避免状态被重置
     }
 } 

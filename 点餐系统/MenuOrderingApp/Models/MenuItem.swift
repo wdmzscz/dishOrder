@@ -28,6 +28,7 @@ struct MenuItem: Identifiable {
         case authenticDinner = "Authentic Chinese Style Dinners"
         case combinationDinner = "Combination Dinner for One"
         case deluxeDinner = "Deluxe Dinners"
+        case custom = "Custom Dishes"
         
         // Chinese display name for each category
         var displayName: String {
@@ -48,6 +49,7 @@ struct MenuItem: Identifiable {
             case .authenticDinner: return "正宗中餐"
             case .combinationDinner: return "单人套餐"
             case .deluxeDinner: return "豪华套餐"
+            case .custom: return "自定义菜品"
             }
         }
         

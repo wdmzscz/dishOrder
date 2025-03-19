@@ -7,6 +7,9 @@ struct CartView: View {
     @State private var isCheckingOut = false
     @State private var showingConfirmation = false
     @State private var showTableSelector = false
+    @State private var showAddExtraCharge = false
+    @State private var extraChargeAmount = ""
+    @State private var extraChargeReason = ""
     
     var body: some View {
         NavigationView {
@@ -43,6 +46,43 @@ struct CartView: View {
                                         .foregroundColor(.blue)
                                 }
                             }
+                        }
+                        
+                        Divider()
+                        
+                        // 显示补差价总额 - 改为计算属性以确保实时更新
+                        let totalExtraCharge = cartManager.calculateTotalExtraCharge()
+                        if totalExtraCharge != 0 {
+                            HStack {
+                                if totalExtraCharge > 0 {
+                                    Text("补差价总额")
+                                        .foregroundColor(.orange)
+                                    Spacer()
+                                    Text("+$\(String(format: "%.2f", totalExtraCharge))")
+                                        .foregroundColor(.red)
+                                } else {
+                                    Text("减价总额")
+                                        .foregroundColor(.green)
+                                    Spacer()
+                                    Text("-$\(String(format: "%.2f", abs(totalExtraCharge)))")
+                                        .foregroundColor(.green)
+                                }
+                            }
+                        }
+                        
+                        Button(action: {
+                            showAddExtraCharge = true
+                        }) {
+                            HStack {
+                                Image(systemName: "dollarsign.circle.fill")
+                                Text("调整整单价格")
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                            }
+                            .padding(12)
+                            .background(Color.orange.opacity(0.1))
+                            .foregroundColor(.orange)
+                            .cornerRadius(8)
                         }
                         
                         Divider()
@@ -94,6 +134,13 @@ struct CartView: View {
             .sheet(isPresented: $showTableSelector) {
                 TableSelectorView(tableNumber: $cartManager.tableNumber)
             }
+            .sheet(isPresented: $showAddExtraCharge) {
+                GlobalExtraChargeView(
+                    cartManager: cartManager,
+                    extraChargeAmount: $extraChargeAmount,
+                    extraChargeReason: $extraChargeReason
+                )
+            }
             .alert(isPresented: $showingConfirmation) {
                 Alert(
                     title: Text("确认订单"),
@@ -102,12 +149,108 @@ struct CartView: View {
                         orderManager.addOrder(from: cartManager)
                         cartManager.clearCart()
                         presentationMode.wrappedValue.dismiss()
+
+                        // 强制刷新视图
+                        cartManager.objectWillChange.send()
                     },
                     secondaryButton: .cancel(Text("取消")) {
                         isCheckingOut = false
                     }
                 )
             }
+        }
+    }
+}
+
+// 整单补差价视图
+struct GlobalExtraChargeView: View {
+    @ObservedObject var cartManager: CartManager
+    @Binding var extraChargeAmount: String
+    @Binding var extraChargeReason: String
+    @Environment(\.presentationMode) var presentationMode
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("调整价格")) {
+                    TextField("金额 (正数加价/负数减价)", text: $extraChargeAmount)
+                        .keyboardType(.decimalPad)
+                    
+                    HStack {
+                        Button(action: {
+                            if let current = Double(extraChargeAmount) {
+                                extraChargeAmount = String(format: "%.2f", -current)
+                            }
+                        }) {
+                            Text("正负切换")
+                                .font(.caption)
+                                .padding(.vertical, 6)
+                                .padding(.horizontal, 10)
+                                .background(Color.blue.opacity(0.1))
+                                .foregroundColor(.blue)
+                                .cornerRadius(8)
+                        }
+                        
+                        Spacer()
+                        
+                        Text("提示: 正数表示加价，负数表示减价")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                    .padding(.top, 4)
+                    
+                    TextField("原因说明", text: $extraChargeReason)
+                        .disableAutocorrection(true)
+                }
+                
+                Section {
+                    Button(action: {
+                        if let amount = Double(extraChargeAmount), amount != 0 {
+                            // 创建一个虚拟菜品用于价格调整
+                            let name = amount > 0 ? "整单补差价" : "整单减价"
+                            
+                            let customItem = MenuItem(
+                                id: UUID().uuidString,
+                                code: "EXTRA",
+                                name: name,
+                                price: .fixed(0.0),  // 设置价格为0，只通过extraCharge计算
+                                category: .custom,
+                                subcategory: nil,
+                                description: amount > 0 ? "整单补差价" : "整单减价",
+                                items: nil,
+                                isSpicy: false
+                            )
+                            
+                            // 添加到购物车
+                            cartManager.addItem(
+                                menuItem: customItem, 
+                                notes: extraChargeReason.isEmpty ? (amount > 0 ? "补差价" : "减价") : extraChargeReason,
+                                extraCharge: amount,
+                                substitution: amount > 0 ? "补差价" : "减价"
+                            )
+                            
+                            // 重置字段
+                            extraChargeAmount = ""
+                            extraChargeReason = ""
+                            
+                            // 关闭视图
+                            presentationMode.wrappedValue.dismiss()
+
+                            // 强制刷新视图
+                            cartManager.objectWillChange.send()
+                        }
+                    }) {
+                        Text("确认调整")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .foregroundColor(.blue)
+                    }
+                    .disabled(Double(extraChargeAmount) == nil || Double(extraChargeAmount) ?? 0 == 0)
+                }
+            }
+            .navigationBarTitle("调整整单价格", displayMode: .inline)
+            .navigationBarItems(trailing: Button("取消") {
+                presentationMode.wrappedValue.dismiss()
+            })
         }
     }
 }

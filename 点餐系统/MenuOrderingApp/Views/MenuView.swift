@@ -7,6 +7,7 @@ struct MenuView: View {
     @State private var selectedCategory: MenuItem.Category? = nil
     @State private var showingCart = false
     @State private var showingTableSelector = false
+    @State private var showingCustomDishSheet = false
     
     private var filteredItems: [MenuItem] {
         let items = MenuItem.sampleItems
@@ -124,6 +125,15 @@ struct MenuView: View {
                     .font(.title2),
                 trailing: HStack {
                     Button(action: {
+                        showingCustomDishSheet = true
+                    }) {
+                        Image(systemName: "plus.circle")
+                            .font(.title2)
+                    }
+                    
+                    Spacer().frame(width: 20)
+                    
+                    Button(action: {
                         showingTableSelector = true
                     }) {
                         HStack {
@@ -160,6 +170,9 @@ struct MenuView: View {
             }
             .sheet(isPresented: $showingTableSelector) {
                 TableSelectorView(tableNumber: $cartManager.tableNumber)
+            }
+            .sheet(isPresented: $showingCustomDishSheet) {
+                CustomDishView(cartManager: cartManager)
             }
             
             // Cart button fixed at bottom
@@ -249,6 +262,60 @@ struct CategoryButton: View {
                 .background(isSelected ? Color.blue : Color(.systemGray6))
                 .foregroundColor(isSelected ? .white : .primary)
                 .cornerRadius(20)
+        }
+    }
+}
+
+// 自定义菜品视图
+struct CustomDishView: View {
+    @ObservedObject var cartManager: CartManager
+    @Environment(\.presentationMode) var presentationMode
+    
+    @State private var dishName = ""
+    @State private var price = ""
+    @State private var quantity = 1
+    @State private var notes = ""
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("自定义菜品信息")) {
+                    TextField("菜品名称", text: $dishName)
+                        .disableAutocorrection(true)
+                    
+                    TextField("价格($)", text: $price)
+                        .keyboardType(.decimalPad)
+                    
+                    Stepper(value: $quantity, in: 1...99) {
+                        Text("数量: \(quantity)")
+                    }
+                    
+                    TextField("备注", text: $notes)
+                        .disableAutocorrection(true)
+                }
+                
+                Section {
+                    Button(action: {
+                        let dishPrice = Double(price) ?? 0.0
+                        cartManager.addCustomDish(
+                            name: dishName,
+                            price: dishPrice,
+                            quantity: quantity,
+                            notes: notes
+                        )
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Text("添加到购物车")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .foregroundColor(.blue)
+                    }
+                    .disabled(dishName.isEmpty || price.isEmpty || Double(price) == nil)
+                }
+            }
+            .navigationBarTitle("添加自定义菜品", displayMode: .inline)
+            .navigationBarItems(trailing: Button("取消") {
+                presentationMode.wrappedValue.dismiss()
+            })
         }
     }
 } 
