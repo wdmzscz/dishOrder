@@ -50,6 +50,11 @@ struct OrderRow: View {
     let order: Order
     let dateFormatter: DateFormatter
     
+    // Pre-compute values to simplify view expressions
+    private var formattedDate: String { dateFormatter.string(from: order.timestamp) }
+    private var formattedTotal: String { String(format: "%.2f", order.total) }
+    private var itemCount: Int { order.items.count }
+    
     init(order: Order) {
         self.order = order
         
@@ -67,12 +72,12 @@ struct OrderRow: View {
                 
                 Spacer()
                 
-                Text(dateFormatter.string(from: order.timestamp))
+                Text(formattedDate)
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }
             
-            Text("\(order.items.count) 个菜品")
+            Text("\(itemCount) 个菜品")
                 .font(.subheadline)
                 .foregroundColor(.gray)
             
@@ -80,7 +85,7 @@ struct OrderRow: View {
                 Text("总价:")
                     .font(.subheadline)
                 
-                Text("$\(String(format: "%.2f", order.total))")
+                Text("$\(formattedTotal)")
                     .font(.headline)
                     .foregroundColor(.blue)
             }
@@ -95,6 +100,12 @@ struct OrderDetailView: View {
     let dateFormatter: DateFormatter
     @Environment(\.presentationMode) var presentationMode
     @State private var showingDeleteAlert = false
+    
+    // Cache calculated values to simplify template expressions
+    private var orderItems: [CartItem] { order.items }
+    private var formattedSubtotal: String { String(format: "%.2f", order.subtotal) }
+    private var formattedTax: String { String(format: "%.2f", order.tax) }
+    private var formattedTotal: String { String(format: "%.2f", order.total) }
     
     init(order: Order, orderManager: OrderManager) {
         self.order = order
@@ -125,7 +136,7 @@ struct OrderDetailView: View {
             }
             
             Section(header: Text("菜品列表")) {
-                ForEach(order.items) { item in
+                ForEach(orderItems) { item in
                     HStack(alignment: .top) {
                         VStack(alignment: .leading) {
                             Text(item.menuItem.name)
@@ -141,7 +152,7 @@ struct OrderDetailView: View {
                         Spacer()
                         
                         VStack(alignment: .trailing) {
-                            Text("\(item.quantity) × $\(String(format: "%.2f", item.menuItem.price))")
+                            Text("\(item.quantity) × \(item.menuItem.displayPrice)")
                                 .font(.subheadline)
                             
                             Text("$\(String(format: "%.2f", item.subtotal))")
@@ -157,20 +168,20 @@ struct OrderDetailView: View {
                 HStack {
                     Text("小计")
                     Spacer()
-                    Text("$\(String(format: "%.2f", order.subtotal))")
+                    Text("$\(formattedSubtotal)")
                 }
                 
                 HStack {
                     Text("税金 (13%)")
                     Spacer()
-                    Text("$\(String(format: "%.2f", order.tax))")
+                    Text("$\(formattedTax)")
                 }
                 
                 HStack {
                     Text("总计")
                         .font(.headline)
                     Spacer()
-                    Text("$\(String(format: "%.2f", order.total))")
+                    Text("$\(formattedTotal)")
                         .font(.headline)
                         .foregroundColor(.blue)
                 }

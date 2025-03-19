@@ -48,7 +48,7 @@ struct MenuView: View {
                         
                         ForEach(MenuItem.Category.allCases) { category in
                             CategoryButton(
-                                title: category.rawValue,
+                                title: category.displayName,
                                 isSelected: selectedCategory == category,
                                 action: { selectedCategory = category }
                             )
@@ -71,13 +71,13 @@ struct MenuView: View {
                         ScrollView {
                             LazyVGrid(columns: [
                                 GridItem(.flexible()),
-                                GridItem(.flexible()),
                                 GridItem(.flexible())
-                            ], spacing: 16) {
+                            ], spacing: 20) {
                                 ForEach(filteredItems) { item in
                                     MenuItemCard(menuItem: item) {
                                         cartManager.addItem(menuItem: item)
                                     }
+                                    .frame(height: item.items != nil ? 200 : 170)
                                 }
                             }
                             .padding()
@@ -87,22 +87,22 @@ struct MenuView: View {
                     } else {
                         // Show as sections by category if no category filter
                         ScrollView {
-                            VStack(alignment: .leading, spacing: 16) {
+                            VStack(alignment: .leading, spacing: 24) {
                                 ForEach(MenuItem.Category.allCases) { category in
                                     if let items = groupedItems[category], !items.isEmpty {
-                                        VStack(alignment: .leading, spacing: 8) {
-                                            Text(category.rawValue)
+                                        VStack(alignment: .leading, spacing: 12) {
+                                            Text(category.displayName)
                                                 .font(.title2)
                                                 .fontWeight(.bold)
                                                 .padding(.horizontal)
                                             
                                             ScrollView(.horizontal, showsIndicators: false) {
-                                                HStack(spacing: 16) {
+                                                HStack(spacing: 20) {
                                                     ForEach(items) { item in
                                                         MenuItemCard(menuItem: item) {
                                                             cartManager.addItem(menuItem: item)
                                                         }
-                                                        .frame(width: 180)
+                                                        .frame(width: 200)
                                                     }
                                                 }
                                                 .padding(.horizontal)

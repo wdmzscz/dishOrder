@@ -7,7 +7,7 @@ struct CartItem: Identifiable, Equatable {
     var notes: String
     
     var subtotal: Double {
-        return menuItem.price * Double(quantity)
+        return menuItem.primaryPrice * Double(quantity)
     }
     
     // 实现Equatable协议的静态方法

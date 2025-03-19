@@ -19,11 +19,20 @@ struct CartItemRow: View {
             HStack(alignment: .top, spacing: 12) {
                 // Item information
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(item.menuItem.name)
-                        .font(.headline)
-                        .lineLimit(2)
+                    HStack {
+                        Text(item.menuItem.name)
+                            .font(.headline)
+                            .lineLimit(2)
+                        
+                        // 显示辣图标
+                        if item.menuItem.isSpicy {
+                            Image(systemName: "flame.fill")
+                                .foregroundColor(.red)
+                                .font(.caption)
+                        }
+                    }
                     
-                    Text("$\(String(format: "%.2f", item.menuItem.price))")
+                    Text(item.menuItem.displayPrice)
                         .font(.subheadline)
                         .foregroundColor(.blue)
                     
@@ -86,6 +95,31 @@ struct CartItemRow: View {
                 .padding(10)
                 .background(Color(.systemGray6))
                 .cornerRadius(8)
+            }
+            
+            // 显示套餐内含项目
+            if let items = item.menuItem.items, !items.isEmpty {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("包含：")
+                        .font(.caption2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.gray)
+                    
+                    ForEach(items.prefix(3), id: \.self) { subItem in
+                        Text("• \(subItem)")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .lineLimit(1)
+                    }
+                    
+                    if items.count > 3 {
+                        Text("...")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                }
+                .padding(.leading, 8)
+                .padding(.top, 2)
             }
             
             // 添加明显的备注按钮
