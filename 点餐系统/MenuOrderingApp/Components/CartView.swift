@@ -359,7 +359,7 @@ struct TableSelector: View {
                 }
             }
             // 当区域变化时，确保桌号在有效范围内
-            .onChange(of: selectedArea) { newArea in
+            .onChange(of: selectedArea) { oldArea, newArea in
                 if let range = numberRanges[newArea], !range.contains(selectedNumber) {
                     selectedNumber = range.lowerBound
                 }
