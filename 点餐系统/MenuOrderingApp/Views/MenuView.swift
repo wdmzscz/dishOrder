@@ -93,11 +93,13 @@ struct MenuView: View {
                                     GridItem(.flexible())
                                 ], spacing: 20) {
                                     ForEach(filteredItems) { item in
-                                        MenuItemCard(
-                                            menuItem: item,
-                                            cartManager: cartManager
-                                        ) {
-                                            cartManager.addItem(menuItem: item)
+                                        ZStack {
+                                            MenuItemCard(
+                                                menuItem: item,
+                                                cartManager: cartManager
+                                            ) {
+                                                cartManager.addItem(menuItem: item)
+                                            }
                                         }
                                         .frame(height: item.items != nil ? 200 : 170)
                                     }
@@ -122,11 +124,13 @@ struct MenuView: View {
                                             ScrollView(.horizontal, showsIndicators: false) {
                                                 HStack(spacing: 20) {
                                                     ForEach(items) { item in
-                                                        MenuItemCard(
-                                                            menuItem: item,
-                                                            cartManager: cartManager
-                                                        ) {
-                                                            cartManager.addItem(menuItem: item)
+                                                        ZStack {
+                                                            MenuItemCard(
+                                                                menuItem: item,
+                                                                cartManager: cartManager
+                                                            ) {
+                                                                cartManager.addItem(menuItem: item)
+                                                            }
                                                         }
                                                         .frame(width: 200)
                                                     }

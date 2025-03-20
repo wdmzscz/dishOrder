@@ -1461,4 +1461,4 @@ extension MenuItem {
     static var sampleItems: [MenuItem] {
         return MenuRepository.shared.allItems
     }
-}
+} 

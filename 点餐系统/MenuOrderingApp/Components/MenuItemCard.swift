@@ -9,6 +9,7 @@ struct MenuItemCard: View {
     @State private var animationOffset: CGSize = .zero
     @State private var showingPriceOptions = false
     @State private var selectedPriceOption: (key: String, value: Double)? = nil
+    @State private var buttonScale: CGFloat = 1.0
     
     // 获取价格选项数组
     var priceOptions: [(key: String, value: Double)] {
@@ -21,7 +22,7 @@ struct MenuItemCard: View {
                 // 菜品代码
                 Text(menuItem.code)
                     .font(.caption)
-                    .foregroundColor(.gray)
+                        .foregroundColor(.gray)
                     .padding(.bottom, 2)
                 
                 // 菜品名称和是否辣
@@ -117,14 +118,27 @@ struct MenuItemCard: View {
                         return
                     }
                     
-                    // 触发动画
-                    withAnimation(.spring(response: 0.6, dampingFraction: 0.7, blendDuration: 0.5)) {
+                    // 按钮按下效果
+                    withAnimation(.spring(response: 0.2, dampingFraction: 0.6, blendDuration: 0.1)) {
+                        buttonScale = 0.9
+                    }
+                    
+                    // 按钮恢复效果
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation(.spring(response: 0.2, dampingFraction: 0.6, blendDuration: 0.1)) {
+                            buttonScale = 1.0
+                        }
+                    }
+                    
+                    // 触发添加动画
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
                         animatingAdd = true
-                        animationOffset = CGSize(width: UIScreen.main.bounds.width/2, height: -UIScreen.main.bounds.height/3)
+                        // 使用更明显的位移
+                        animationOffset = CGSize(width: 100, height: -150)
                     }
                     
                     // 延迟执行实际添加，以便动画效果完成
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
                         if let selected = selectedPriceOption {
                             // 添加带选择价格的菜品
                             let customMenuItem = MenuItem(
@@ -163,6 +177,7 @@ struct MenuItemCard: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
                 }
+                .scaleEffect(buttonScale)
                 .frame(maxWidth: .infinity, alignment: .center)
             }
             .padding(12)
@@ -170,22 +185,24 @@ struct MenuItemCard: View {
             .background(Color(.systemBackground))
             .cornerRadius(12)
             .shadow(color: Color(.systemGray4).opacity(0.3), radius: 4, x: 0, y: 2)
-            
-            // 添加动画元素
-            if animatingAdd {
-                // 飞向购物车的数字+1
-                Text("+1")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .padding(12)
-                    .background(Color.green)
-                    .clipShape(Circle())
-                    .shadow(radius: 3)
-                    .offset(animationOffset)
-                    .opacity(animatingAdd ? 1 : 0)
-            }
         }
+        .overlay(
+            // 将动画元素移到overlay中，确保它不会被其他视图遮挡
+            Group {
+                if animatingAdd {
+                    // 动画元素
+                    Text("+1")
+                        .font(.headline.weight(.bold))
+                        .foregroundColor(.white)
+                        .padding(15)
+                        .background(Color.green)
+                        .clipShape(Circle())
+                        .shadow(color: Color.black.opacity(0.3), radius: 5, x: 0, y: 3)
+                        .offset(animationOffset)
+                        .transition(.scale.combined(with: .opacity))
+                }
+            }
+        )
         .sheet(isPresented: $showingPriceOptions) {
             PriceOptionsView(
                 options: priceOptions,
@@ -203,70 +220,119 @@ struct ComboDetailsView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var showingSubstitutionSheet = false
     @State private var selectedItemToSubstitute = ""
+    @State private var animatingAdd = false
+    @State private var animationOffset: CGSize = .zero
+    @State private var buttonScale: CGFloat = 1.0
     
     var body: some View {
         NavigationView {
-            List {
-                Section(header: Text("套餐详情")) {
-                    Text(menuItem.name)
-                        .font(.headline)
-                    
-                    if !menuItem.description.isEmpty {
-                        Text(menuItem.description)
+            ZStack {
+                List {
+                    Section(header: Text("套餐详情")) {
+                        Text(menuItem.name)
+                            .font(.headline)
+                        
+                        if !menuItem.description.isEmpty {
+                            Text(menuItem.description)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .padding(.vertical, 4)
+                        }
+                        
+                        Text(menuItem.displayPrice)
                             .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.blue)
                             .padding(.vertical, 4)
                     }
                     
-                    Text(menuItem.displayPrice)
-                        .font(.subheadline)
-                        .foregroundColor(.blue)
-                        .padding(.vertical, 4)
-                }
-                
-                if let items = menuItem.items, !items.isEmpty {
-                    Section(header: Text("包含菜品")) {
-                        ForEach(items, id: \.self) { item in
-                            HStack {
-                                Image(systemName: "circle.fill")
-                                    .font(.system(size: 6))
-                                    .foregroundColor(.gray)
-                                    .padding(.trailing, 4)
-                                
-                                Text(item)
-                                    .font(.body)
-                                
-                                Spacer()
-                                
-                                Button(action: {
-                                    selectedItemToSubstitute = item
-                                    showingSubstitutionSheet = true
-                                }) {
-                                    Text("更换")
-                                        .font(.caption)
-                                        .foregroundColor(.blue)
+                    if let items = menuItem.items, !items.isEmpty {
+                        Section(header: Text("包含菜品")) {
+                            ForEach(items, id: \.self) { item in
+                                HStack {
+                                    Image(systemName: "circle.fill")
+                                        .font(.system(size: 6))
+                                        .foregroundColor(.gray)
+                                        .padding(.trailing, 4)
+                                    
+                                    Text(item)
+                                        .font(.body)
+                                    
+                                    Spacer()
+                                    
+                                    Button(action: {
+                                        selectedItemToSubstitute = item
+                                        showingSubstitutionSheet = true
+                                    }) {
+                                        Text("更换")
+                                            .font(.caption)
+                                            .foregroundColor(.blue)
+                                    }
+                                }
+                                .padding(.vertical, 4)
+                            }
+                        }
+                    }
+                    
+                    Section {
+                        Button(action: {
+                            // 按钮按下效果
+                            withAnimation(.spring(response: 0.2, dampingFraction: 0.6, blendDuration: 0.1)) {
+                                buttonScale = 0.9
+                            }
+                            
+                            // 按钮恢复效果
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                withAnimation(.spring(response: 0.2, dampingFraction: 0.6, blendDuration: 0.1)) {
+                                    buttonScale = 1.0
                                 }
                             }
-                            .padding(.vertical, 4)
+                            
+                            // 触发添加动画
+                            withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
+                                animatingAdd = true
+                                animationOffset = CGSize(width: 100, height: -150)
+                            }
+                            
+                            // 延迟执行实际添加，以便动画效果完成
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                                cartManager.addItem(menuItem: menuItem)
+                                
+                                // 重置动画状态并关闭弹窗
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    withAnimation {
+                                        animatingAdd = false
+                                        animationOffset = .zero
+                                    }
+                                    presentationMode.wrappedValue.dismiss()
+                                }
+                            }
+                        }) {
+                            HStack {
+                                Spacer()
+                                Text("添加到购物车")
+                                    .fontWeight(.semibold)
+                                Spacer()
+                            }
                         }
+                        .scaleEffect(buttonScale)
                     }
                 }
+                .listStyle(InsetGroupedListStyle())
                 
-                Section {
-                    Button(action: {
-                        cartManager.addItem(menuItem: menuItem)
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        HStack {
-                            Spacer()
-                            Text("添加到购物车")
-                                .fontWeight(.semibold)
-                            Spacer()
-                        }
-                    }
+                // 添加动画元素
+                if animatingAdd {
+                    Text("+1")
+                        .font(.headline.weight(.bold))
+                        .foregroundColor(.white)
+                        .padding(15)
+                        .background(Color.green)
+                        .clipShape(Circle())
+                        .shadow(color: Color.black.opacity(0.3), radius: 5, x: 0, y: 3)
+                        .offset(animationOffset)
+                        .transition(.scale.combined(with: .opacity))
+                        .zIndex(1000)
                 }
             }
-            .listStyle(InsetGroupedListStyle())
             .navigationBarTitle("套餐详情", displayMode: .inline)
             .navigationBarItems(trailing: Button("关闭") {
                 presentationMode.wrappedValue.dismiss()
@@ -296,60 +362,109 @@ struct SimpleSubstitutionView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var newDishName = ""
     @State private var extraCharge = ""
+    @State private var animatingAdd = false
+    @State private var animationOffset: CGSize = .zero
+    @State private var buttonScale: CGFloat = 1.0
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("更换菜品")) {
-                    Text("原菜品: \(originalDish)")
-                        .foregroundColor(.secondary)
+            ZStack {
+                Form {
+                    Section(header: Text("更换菜品")) {
+                        Text("原菜品: \(originalDish)")
+                            .foregroundColor(.secondary)
+                        
+                        TextField("新菜品名称", text: $newDishName)
+                            .disableAutocorrection(true)
+                        
+                        TextField("补差价($)", text: $extraCharge)
+                            .keyboardType(.decimalPad)
+                    }
                     
-                    TextField("新菜品名称", text: $newDishName)
-                        .disableAutocorrection(true)
-                    
-                    TextField("补差价($)", text: $extraCharge)
-                        .keyboardType(.decimalPad)
+                    Section {
+                        Button(action: {
+                            // 按钮按下效果
+                            withAnimation(.spring(response: 0.2, dampingFraction: 0.6, blendDuration: 0.1)) {
+                                buttonScale = 0.9
+                            }
+                            
+                            // 按钮恢复效果
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                withAnimation(.spring(response: 0.2, dampingFraction: 0.6, blendDuration: 0.1)) {
+                                    buttonScale = 1.0
+                                }
+                            }
+                            
+                            // 触发添加动画
+                            withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
+                                animatingAdd = true
+                                animationOffset = CGSize(width: 100, height: -150)
+                            }
+                            
+                            // 准备数据
+                            let charge = Double(extraCharge) ?? 0.0
+                            let substitutionText = "更换: \(originalDish) → \(newDishName)"
+                            
+                            // 为原套餐创建自定义版本
+                            let customizedPrice = menuItem.primaryPrice + charge
+                            let customizedMenuItem = MenuItem(
+                                id: "\(menuItem.id)_customized_\(UUID().uuidString)",
+                                code: menuItem.code,
+                                name: menuItem.name,
+                                price: .fixed(customizedPrice),
+                                category: menuItem.category,
+                                subcategory: menuItem.subcategory,
+                                description: menuItem.description,
+                                items: menuItem.items?.map { item -> String in
+                                    if item == originalDish {
+                                        return newDishName // 替换菜品名称
+                                    }
+                                    return item
+                                },
+                                isSpicy: menuItem.isSpicy
+                            )
+                            
+                            // 延迟执行实际添加，以便动画效果完成
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                                cartManager.addItem(
+                                    menuItem: customizedMenuItem, 
+                                    notes: "菜品更换",
+                                    extraCharge: charge,
+                                    substitution: substitutionText
+                                )
+                                
+                                // 重置动画状态并关闭弹窗
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    withAnimation {
+                                        animatingAdd = false
+                                        animationOffset = .zero
+                                    }
+                                    presentationMode.wrappedValue.dismiss()
+                                    dismissAction()
+                                }
+                            }
+                        }) {
+                            Text("确认更换并添加到购物车")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .foregroundColor(.blue)
+                        }
+                        .scaleEffect(buttonScale)
+                        .disabled(newDishName.isEmpty || extraCharge.isEmpty)
+                    }
                 }
                 
-                Section {
-                    Button(action: {
-                        let charge = Double(extraCharge) ?? 0.0
-                        let substitutionText = "更换: \(originalDish) → \(newDishName)"
-                        
-                        // 为原套餐创建自定义版本
-                        let customizedPrice = menuItem.primaryPrice + charge
-                        let customizedMenuItem = MenuItem(
-                            id: "\(menuItem.id)_customized_\(UUID().uuidString)",
-                            code: menuItem.code,
-                            name: menuItem.name,
-                            price: .fixed(customizedPrice),
-                            category: menuItem.category,
-                            subcategory: menuItem.subcategory,
-                            description: menuItem.description,
-                            items: menuItem.items?.map { item -> String in
-                                if item == originalDish {
-                                    return newDishName // 替换菜品名称
-                                }
-                                return item
-                            },
-                            isSpicy: menuItem.isSpicy
-                        )
-                        
-                        cartManager.addItem(
-                            menuItem: customizedMenuItem, 
-                            notes: "菜品更换",
-                            extraCharge: charge,
-                            substitution: substitutionText
-                        )
-                        
-                        presentationMode.wrappedValue.dismiss()
-                        dismissAction()
-                    }) {
-                        Text("确认更换并添加到购物车")
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .foregroundColor(.blue)
-                    }
-                    .disabled(newDishName.isEmpty || extraCharge.isEmpty)
+                // 添加动画元素
+                if animatingAdd {
+                    Text("+1")
+                        .font(.headline.weight(.bold))
+                        .foregroundColor(.white)
+                        .padding(15)
+                        .background(Color.green)
+                        .clipShape(Circle())
+                        .shadow(color: Color.black.opacity(0.3), radius: 5, x: 0, y: 3)
+                        .offset(animationOffset)
+                        .transition(.scale.combined(with: .opacity))
+                        .zIndex(1000)
                 }
             }
             .navigationBarTitle("菜品更换", displayMode: .inline)
