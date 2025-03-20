@@ -6,10 +6,10 @@ struct MenuItemCard: View {
     let addAction: () -> Void
     @State private var showingItemDetails = false
     @State private var animatingAdd = false
-    @State private var animationOffset: CGSize = .zero
     @State private var showingPriceOptions = false
     @State private var selectedPriceOption: (key: String, value: Double)? = nil
     @State private var buttonScale: CGFloat = 1.0
+    @State private var badgeOffset: CGSize = .zero // 使用新的偏移量变量
     
     // 获取价格选项数组
     var priceOptions: [(key: String, value: Double)] {
@@ -22,7 +22,7 @@ struct MenuItemCard: View {
                 // 菜品代码
                 Text(menuItem.code)
                     .font(.caption)
-                        .foregroundColor(.gray)
+                    .foregroundColor(.gray)
                     .padding(.bottom, 2)
                 
                 // 菜品名称和是否辣
@@ -130,11 +130,15 @@ struct MenuItemCard: View {
                         }
                     }
                     
-                    // 触发添加动画
-                    withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
-                        animatingAdd = true
-                        // 使用更明显的位移
-                        animationOffset = CGSize(width: 100, height: -150)
+                    // 重置徽章位置
+                    badgeOffset = .zero
+                    
+                    // 显示徽章
+                    animatingAdd = true
+                    
+                    // 使用显式的动画，设置飞向右上方的偏移量
+                    withAnimation(.easeOut(duration: 0.8)) {
+                        badgeOffset = CGSize(width: 100, height: -150)
                     }
                     
                     // 延迟执行实际添加，以便动画效果完成
@@ -158,10 +162,9 @@ struct MenuItemCard: View {
                             addAction()
                         }
                         
-                        // 重置动画状态
-                        withAnimation {
+                        // 延迟隐藏徽章，等动画完成
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             animatingAdd = false
-                            animationOffset = .zero
                         }
                     }
                 }) {
@@ -185,24 +188,14 @@ struct MenuItemCard: View {
             .background(Color(.systemBackground))
             .cornerRadius(12)
             .shadow(color: Color(.systemGray4).opacity(0.3), radius: 4, x: 0, y: 2)
-        }
-        .overlay(
-            // 将动画元素移到overlay中，确保它不会被其他视图遮挡
-            Group {
-                if animatingAdd {
-                    // 动画元素
-                    Text("+1")
-                        .font(.headline.weight(.bold))
-                        .foregroundColor(.white)
-                        .padding(15)
-                        .background(Color.green)
-                        .clipShape(Circle())
-                        .shadow(color: Color.black.opacity(0.3), radius: 5, x: 0, y: 3)
-                        .offset(animationOffset)
-                        .transition(.scale.combined(with: .opacity))
-                }
+            
+            // 添加徽章动画
+            if animatingAdd {
+                AddBadgeView()
+                    .offset(badgeOffset)
+                    .zIndex(100)
             }
-        )
+        }
         .sheet(isPresented: $showingPriceOptions) {
             PriceOptionsView(
                 options: priceOptions,
@@ -210,6 +203,19 @@ struct MenuItemCard: View {
                 itemName: menuItem.name
             )
         }
+    }
+}
+
+// 添加徽章视图
+struct AddBadgeView: View {
+    var body: some View {
+        Text("+1")
+            .font(.headline.weight(.bold))
+            .foregroundColor(.white)
+            .padding(12)
+            .background(Color.green)
+            .clipShape(Circle())
+            .shadow(color: Color.black.opacity(0.3), radius: 5, x: 0, y: 3)
     }
 }
 
@@ -221,7 +227,7 @@ struct ComboDetailsView: View {
     @State private var showingSubstitutionSheet = false
     @State private var selectedItemToSubstitute = ""
     @State private var animatingAdd = false
-    @State private var animationOffset: CGSize = .zero
+    @State private var badgeOffset: CGSize = .zero
     @State private var buttonScale: CGFloat = 1.0
     
     var body: some View {
@@ -287,10 +293,15 @@ struct ComboDetailsView: View {
                                 }
                             }
                             
-                            // 触发添加动画
-                            withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
-                                animatingAdd = true
-                                animationOffset = CGSize(width: 100, height: -150)
+                            // 重置徽章位置
+                            badgeOffset = .zero
+                            
+                            // 显示徽章
+                            animatingAdd = true
+                            
+                            // 使用显式的动画，设置飞向右上方的偏移量
+                            withAnimation(.easeOut(duration: 0.8)) {
+                                badgeOffset = CGSize(width: 100, height: -150)
                             }
                             
                             // 延迟执行实际添加，以便动画效果完成
@@ -299,10 +310,7 @@ struct ComboDetailsView: View {
                                 
                                 // 重置动画状态并关闭弹窗
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                    withAnimation {
-                                        animatingAdd = false
-                                        animationOffset = .zero
-                                    }
+                                    animatingAdd = false
                                     presentationMode.wrappedValue.dismiss()
                                 }
                             }
@@ -319,18 +327,11 @@ struct ComboDetailsView: View {
                 }
                 .listStyle(InsetGroupedListStyle())
                 
-                // 添加动画元素
+                // 添加徽章动画
                 if animatingAdd {
-                    Text("+1")
-                        .font(.headline.weight(.bold))
-                        .foregroundColor(.white)
-                        .padding(15)
-                        .background(Color.green)
-                        .clipShape(Circle())
-                        .shadow(color: Color.black.opacity(0.3), radius: 5, x: 0, y: 3)
-                        .offset(animationOffset)
-                        .transition(.scale.combined(with: .opacity))
-                        .zIndex(1000)
+                    AddBadgeView()
+                        .offset(badgeOffset)
+                        .zIndex(100)
                 }
             }
             .navigationBarTitle("套餐详情", displayMode: .inline)
@@ -352,7 +353,7 @@ struct ComboDetailsView: View {
     }
 }
 
-// 简化版菜品替换视图 - 已经正确实现
+// 简化版菜品替换视图
 struct SimpleSubstitutionView: View {
     let originalDish: String
     let menuItem: MenuItem
@@ -363,7 +364,7 @@ struct SimpleSubstitutionView: View {
     @State private var newDishName = ""
     @State private var extraCharge = ""
     @State private var animatingAdd = false
-    @State private var animationOffset: CGSize = .zero
+    @State private var badgeOffset: CGSize = .zero
     @State private var buttonScale: CGFloat = 1.0
     
     var body: some View {
@@ -395,10 +396,15 @@ struct SimpleSubstitutionView: View {
                                 }
                             }
                             
-                            // 触发添加动画
-                            withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
-                                animatingAdd = true
-                                animationOffset = CGSize(width: 100, height: -150)
+                            // 重置徽章位置
+                            badgeOffset = .zero
+                            
+                            // 显示徽章
+                            animatingAdd = true
+                            
+                            // 使用显式的动画，设置飞向右上方的偏移量
+                            withAnimation(.easeOut(duration: 0.8)) {
+                                badgeOffset = CGSize(width: 100, height: -150)
                             }
                             
                             // 准备数据
@@ -435,10 +441,7 @@ struct SimpleSubstitutionView: View {
                                 
                                 // 重置动画状态并关闭弹窗
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                    withAnimation {
-                                        animatingAdd = false
-                                        animationOffset = .zero
-                                    }
+                                    animatingAdd = false
                                     presentationMode.wrappedValue.dismiss()
                                     dismissAction()
                                 }
@@ -453,18 +456,11 @@ struct SimpleSubstitutionView: View {
                     }
                 }
                 
-                // 添加动画元素
+                // 添加徽章动画
                 if animatingAdd {
-                    Text("+1")
-                        .font(.headline.weight(.bold))
-                        .foregroundColor(.white)
-                        .padding(15)
-                        .background(Color.green)
-                        .clipShape(Circle())
-                        .shadow(color: Color.black.opacity(0.3), radius: 5, x: 0, y: 3)
-                        .offset(animationOffset)
-                        .transition(.scale.combined(with: .opacity))
-                        .zIndex(1000)
+                    AddBadgeView()
+                        .offset(badgeOffset)
+                        .zIndex(100)
                 }
             }
             .navigationBarTitle("菜品更换", displayMode: .inline)
