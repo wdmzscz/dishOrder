@@ -200,7 +200,9 @@ struct MenuItemCard: View {
             PriceOptionsView(
                 options: priceOptions,
                 selectedOption: $selectedPriceOption,
-                itemName: menuItem.name
+                itemName: menuItem.name,
+                menuItem: menuItem,
+                cartManager: cartManager
             )
         }
     }
@@ -476,34 +478,78 @@ struct PriceOptionsView: View {
     let options: [(key: String, value: Double)]
     @Binding var selectedOption: (key: String, value: Double)?
     let itemName: String
+    let menuItem: MenuItem
+    let cartManager: CartManager
+    @State private var animatingAdd = false
+    @State private var badgeOffset: CGSize = .zero
+    
     @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
         NavigationView {
-            List {
-                Section(header: Text("选择价格规格")) {
-                    ForEach(options, id: \.key) { option in
-                        Button(action: {
-                            selectedOption = option
-                            presentationMode.wrappedValue.dismiss()
-                        }) {
-                            HStack {
-                                Text(option.key)
-                                    .foregroundColor(.primary)
+            ZStack {
+                List {
+                    Section(header: Text("选择价格规格")) {
+                        ForEach(options, id: \.key) { option in
+                            Button(action: {
+                                selectedOption = option
                                 
-                                Spacer()
+                                // 创建一个自定义的MenuItem，包含选中的价格信息
+                                let customMenuItem = MenuItem(
+                                    id: "\(menuItem.id)_\(option.key)",
+                                    code: menuItem.code,
+                                    name: "\(menuItem.name) (\(option.key))",
+                                    price: .fixed(option.value),
+                                    category: menuItem.category,
+                                    subcategory: menuItem.subcategory,
+                                    description: menuItem.description,
+                                    items: menuItem.items,
+                                    isSpicy: menuItem.isSpicy
+                                )
                                 
-                                Text("$\(String(format: "%.2f", option.value))")
-                                    .foregroundColor(.blue)
-                                    .fontWeight(.semibold)
+                                // 显示添加动画
+                                animatingAdd = true
+                                withAnimation(.easeOut(duration: 0.8)) {
+                                    badgeOffset = CGSize(width: 100, height: -150)
+                                }
                                 
-                                if selectedOption?.key == option.key {
-                                    Image(systemName: "checkmark")
+                                // 延迟执行添加到购物车，以便用户可以看到动画
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    // 直接添加到购物车
+                                    cartManager.addItem(menuItem: customMenuItem)
+                                    
+                                    // 延迟关闭价格选择视图
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                        animatingAdd = false
+                                        presentationMode.wrappedValue.dismiss()
+                                    }
+                                }
+                            }) {
+                                HStack {
+                                    Text(option.key)
+                                        .foregroundColor(.primary)
+                                    
+                                    Spacer()
+                                    
+                                    Text("$\(String(format: "%.2f", option.value))")
                                         .foregroundColor(.blue)
+                                        .fontWeight(.semibold)
+                                    
+                                    if selectedOption?.key == option.key {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(.blue)
+                                    }
                                 }
                             }
                         }
                     }
+                }
+                
+                // 添加徽章动画
+                if animatingAdd {
+                    AddBadgeView()
+                        .offset(badgeOffset)
+                        .zIndex(100)
                 }
             }
             .navigationBarTitle("\(itemName) - 价格选择", displayMode: .inline)
