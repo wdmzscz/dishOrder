@@ -5,9 +5,13 @@ import SwiftUI
 struct TableNumber: Equatable, Hashable {
     var area: String  // 区域: A, B, C
     var number: Int   // 号码: 1-5
+    var customName: String = "" // 自定义桌号名称
     
     // 格式化为显示用的字符串
     var formatted: String {
+        if !customName.isEmpty {
+            return customName
+        }
         return "\(area)\(number)"
     }
     
@@ -18,9 +22,18 @@ struct TableNumber: Equatable, Hashable {
 class CartManager: ObservableObject {
     @Published var items: [CartItem] = []
     @Published var tableNumber: TableNumber = TableNumber.defaultTable
+    @Published var customDishes: [MenuItem] = []
+    
+    // 添加单例，用于在环境对象缺失时提供备用实例
+    static let shared = CartManager()
     
     // Ontario tax rates
     private let hstRate = 0.13 // 13% HST in Ontario
+    
+    // 初始化方法，从UserDefaults加载自定义菜品
+    init() {
+        loadCustomDishes()
+    }
     
     // Total before tax
     var subtotal: Double {
@@ -96,8 +109,8 @@ class CartManager: ObservableObject {
         items.removeAll()
     }
     
-    // Add custom dish
-    func addCustomDish(name: String, price: Double, quantity: Int = 1, notes: String = "") {
+    // Add custom dish and save it
+    func addCustomDish(name: String, price: Double, quantity: Int = 1, notes: String = "", saveToCustom: Bool = true) {
         // Create a custom menu item
         let customItem = MenuItem(
             id: UUID().uuidString,
@@ -111,12 +124,72 @@ class CartManager: ObservableObject {
             isSpicy: false
         )
         
+        // 如果需要保存到自定义菜品列表
+        if saveToCustom {
+            // 检查是否已存在相同名称的自定义菜品
+            if !customDishes.contains(where: { $0.name == name }) {
+                customDishes.append(customItem)
+                saveCustomDishes()
+            }
+        }
+        
         // Add to cart
         addItem(menuItem: customItem, quantity: quantity, notes: notes)
+    }
+    
+    // 从自定义菜品列表中删除菜品
+    func removeCustomDish(dish: MenuItem) {
+        customDishes.removeAll { $0.id == dish.id }
+        saveCustomDishes()
+    }
+    
+    // 保存自定义菜品到UserDefaults
+    private func saveCustomDishes() {
+        let encoder = JSONEncoder()
+        if let encodedDishes = try? encoder.encode(customDishes.map { CustomDishData(from: $0) }) {
+            UserDefaults.standard.set(encodedDishes, forKey: "customDishes")
+        }
+    }
+    
+    // 从UserDefaults加载自定义菜品
+    private func loadCustomDishes() {
+        if let savedDishes = UserDefaults.standard.data(forKey: "customDishes") {
+            let decoder = JSONDecoder()
+            if let loadedDishes = try? decoder.decode([CustomDishData].self, from: savedDishes) {
+                customDishes = loadedDishes.map { $0.toMenuItem() }
+            }
+        }
     }
     
     // Calculate total extra charge
     func calculateTotalExtraCharge() -> Double {
         return items.map { $0.extraCharge * Double($0.quantity) }.reduce(0, +)
+    }
+}
+
+// 自定义菜品数据结构（用于编码解码）
+struct CustomDishData: Codable {
+    let id: String
+    let name: String
+    let price: Double
+    
+    init(from menuItem: MenuItem) {
+        self.id = menuItem.id
+        self.name = menuItem.name
+        self.price = menuItem.primaryPrice
+    }
+    
+    func toMenuItem() -> MenuItem {
+        return MenuItem(
+            id: id,
+            code: "CUSTOM",
+            name: name,
+            price: .fixed(price),
+            category: .custom,
+            subcategory: nil,
+            description: "自定义菜品",
+            items: nil,
+            isSpicy: false
+        )
     }
 } 

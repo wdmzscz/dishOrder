@@ -132,7 +132,7 @@ struct CartView: View {
                 }
             )
             .sheet(isPresented: $showTableSelector) {
-                TableSelectorView(tableNumber: $cartManager.tableNumber)
+                TableSelector(tableNumber: $cartManager.tableNumber)
             }
             .sheet(isPresented: $showAddExtraCharge) {
                 GlobalExtraChargeView(
@@ -255,56 +255,77 @@ struct GlobalExtraChargeView: View {
     }
 }
 
-struct TableSelectorView: View {
+// 桌号选择器
+struct TableSelector: View {
     @Binding var tableNumber: TableNumber
     @Environment(\.presentationMode) var presentationMode
-    @State private var selectedArea: String
-    @State private var selectedNumber: Int
+    
+    @State private var selectedArea = "A"
+    @State private var selectedNumber = 1
+    @State private var showingCustomTableName = false
+    @State private var customTableName = ""
     
     // 可用的区域和对应的桌号范围
     let availableAreas = ["A", "B", "C"]
     let numberRanges = [
-        "A": 1...4,
-        "B": 1...4,
-        "C": 1...5
+        "A": 1...10,
+        "B": 1...15,
+        "C": 1...8
     ]
-    
-    init(tableNumber: Binding<TableNumber>) {
-        self._tableNumber = tableNumber
-        self._selectedArea = State(initialValue: tableNumber.wrappedValue.area)
-        self._selectedNumber = State(initialValue: tableNumber.wrappedValue.number)
-    }
     
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                // 区域选择
-                Section(header: Text("选择区域").font(.headline)) {
-                    Picker("区域", selection: $selectedArea) {
-                        ForEach(availableAreas, id: \.self) { area in
-                            Text("区域 \(area)").tag(area)
-                        }
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
+                // 自定义桌号选项
+                Toggle("使用自定义桌号", isOn: $showingCustomTableName)
                     .padding(.horizontal)
-                }
                 
-                // 桌号选择
-                Section(header: Text("选择桌号").font(.headline)) {
-                    Picker("桌号", selection: $selectedNumber) {
-                        ForEach(Array(numberRanges[selectedArea] ?? 1...5), id: \.self) { number in
-                            Text("\(number)").tag(number)
-                        }
+                if showingCustomTableName {
+                    // 自定义桌号输入
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("输入自定义桌号:")
+                            .font(.headline)
+                        
+                        TextField("例如: A1-B2拼桌", text: $customTableName)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .disableAutocorrection(true)
+                            .padding(.horizontal)
+                        
+                        Text("提示: 自定义桌号适用于拼桌等特殊情况")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .padding(.horizontal)
                     }
-                    .pickerStyle(WheelPickerStyle())
+                    .padding(.horizontal)
+                } else {
+                    // 区域选择
+                    Section(header: Text("选择区域").font(.headline)) {
+                        Picker("区域", selection: $selectedArea) {
+                            ForEach(availableAreas, id: \.self) { area in
+                                Text("区域 \(area)").tag(area)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .padding(.horizontal)
+                    }
+                    
+                    // 桌号选择
+                    Section(header: Text("选择桌号").font(.headline)) {
+                        Picker("桌号", selection: $selectedNumber) {
+                            ForEach(Array(numberRanges[selectedArea] ?? 1...5), id: \.self) { number in
+                                Text("\(number)").tag(number)
+                            }
+                        }
+                        .pickerStyle(WheelPickerStyle())
+                    }
+                    
+                    // 预览选择的餐桌号
+                    Text("当前选择: \(selectedArea)\(selectedNumber)")
+                        .font(.title2)
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
                 }
-                
-                // 预览选择的餐桌号
-                Text("当前选择: \(selectedArea)\(selectedNumber)")
-                    .font(.title2)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(8)
                 
                 Spacer()
             }
@@ -315,10 +336,28 @@ struct TableSelectorView: View {
                     presentationMode.wrappedValue.dismiss()
                 },
                 trailing: Button("确定") {
-                    tableNumber = TableNumber(area: selectedArea, number: selectedNumber)
+                    if showingCustomTableName {
+                        var newTableNumber = TableNumber(area: "X", number: 0)
+                        newTableNumber.customName = customTableName
+                        tableNumber = newTableNumber
+                    } else {
+                        tableNumber = TableNumber(area: selectedArea, number: selectedNumber)
+                    }
                     presentationMode.wrappedValue.dismiss()
                 }
+                .disabled(showingCustomTableName && customTableName.isEmpty)
             )
+            .onAppear {
+                // 初始化已有的桌号或自定义桌号
+                if !tableNumber.customName.isEmpty {
+                    customTableName = tableNumber.customName
+                    showingCustomTableName = true
+                } else {
+                    selectedArea = tableNumber.area
+                    selectedNumber = tableNumber.number
+                    showingCustomTableName = false
+                }
+            }
             // 当区域变化时，确保桌号在有效范围内
             .onChange(of: selectedArea) { newArea in
                 if let range = numberRanges[newArea], !range.contains(selectedNumber) {

@@ -15,7 +15,7 @@ struct CartItemRow: View {
         self.item = item
         self._notes = State(initialValue: item.notes)
         self._localQuantity = State(initialValue: item.quantity)
-        self._extraCharge = State(initialValue: String(format: "%.2f", item.extraCharge))
+        self._extraCharge = State(initialValue: item.extraCharge == 0 ? "" : String(format: "%.2f", item.extraCharge))
         self._substitutionReason = State(initialValue: item.substitution)
     }
     
@@ -278,7 +278,7 @@ struct CartItemRow: View {
                                 if let current = Double(extraCharge) {
                                     extraCharge = String(format: "%.2f", -current)
                                 } else if extraCharge.isEmpty {
-                                    extraCharge = "0.00"
+                                    // 如果为空，则不设置默认值
                                 }
                             }) {
                                 Text("正负切换")
@@ -325,5 +325,27 @@ struct CartItemRow: View {
                 self.localQuantity = updatedItem.quantity
             }
         }
+    }
+}
+
+// 用于创建占位文本的ViewModifier
+struct PlaceholderStyle: ViewModifier {
+    var showPlaceHolder: Bool
+    var placeholder: Text
+    
+    func body(content: Content) -> some View {
+        ZStack(alignment: .leading) {
+            if showPlaceHolder {
+                placeholder
+            }
+            content
+        }
+    }
+}
+
+// 扩展View，添加placeholder支持
+extension View {
+    func placeholder(when shouldShow: Bool, alignment: Alignment = .leading, @ViewBuilder placeholder: () -> Text) -> some View {
+        modifier(PlaceholderStyle(showPlaceHolder: shouldShow, placeholder: placeholder()))
     }
 } 
