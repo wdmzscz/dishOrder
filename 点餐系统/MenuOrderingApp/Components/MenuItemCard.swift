@@ -7,6 +7,13 @@ struct MenuItemCard: View {
     @State private var showingItemDetails = false
     @State private var animatingAdd = false
     @State private var animationOffset: CGSize = .zero
+    @State private var showingPriceOptions = false
+    @State private var selectedPriceOption: (key: String, value: Double)? = nil
+    
+    // 获取价格选项数组
+    var priceOptions: [(key: String, value: Double)] {
+        return menuItem.price.priceOptions
+    }
     
     var body: some View {
         ZStack {
@@ -33,11 +40,47 @@ struct MenuItemCard: View {
                 }
                 .padding(.bottom, 4)
                 
-                // 价格
-                Text(menuItem.displayPrice)
-                    .font(.subheadline)
-                    .foregroundColor(.blue)
-                    .padding(.bottom, 4)
+                // 价格显示
+                if case .options = menuItem.price, priceOptions.count > 1 {
+                    // 有多个价格选项时
+                    if let selected = selectedPriceOption {
+                        HStack {
+                            Text("\(selected.key): $\(String(format: "%.2f", selected.value))")
+                                .font(.subheadline)
+                                .foregroundColor(.blue)
+                            
+                            Button(action: {
+                                showingPriceOptions = true
+                            }) {
+                                Image(systemName: "chevron.down")
+                                    .font(.caption)
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        .padding(.bottom, 4)
+                    } else {
+                        Button(action: {
+                            showingPriceOptions = true
+                        }) {
+                            HStack {
+                                Text("选择价格规格")
+                                    .font(.subheadline)
+                                    .foregroundColor(.blue)
+                                
+                                Image(systemName: "chevron.down")
+                                    .font(.caption)
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        .padding(.bottom, 4)
+                    }
+                } else {
+                    // 单一价格
+                    Text(menuItem.displayPrice)
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                        .padding(.bottom, 4)
+                }
                 
                 // 套餐内含项提示
                 if let items = menuItem.items, !items.isEmpty {
@@ -68,6 +111,12 @@ struct MenuItemCard: View {
                 
                 // 添加按钮
                 Button(action: {
+                    // 如果有价格选项但用户未选择，弹出选择界面
+                    if case .options = menuItem.price, priceOptions.count > 1, selectedPriceOption == nil {
+                        showingPriceOptions = true
+                        return
+                    }
+                    
                     // 触发动画
                     withAnimation(.spring(response: 0.6, dampingFraction: 0.7, blendDuration: 0.5)) {
                         animatingAdd = true
@@ -76,7 +125,25 @@ struct MenuItemCard: View {
                     
                     // 延迟执行实际添加，以便动画效果完成
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                        addAction()
+                        if let selected = selectedPriceOption {
+                            // 添加带选择价格的菜品
+                            let customMenuItem = MenuItem(
+                                id: "\(menuItem.id)_\(selected.key)",
+                                code: menuItem.code,
+                                name: "\(menuItem.name) (\(selected.key))",
+                                price: .fixed(selected.value),
+                                category: menuItem.category,
+                                subcategory: menuItem.subcategory,
+                                description: menuItem.description,
+                                items: menuItem.items,
+                                isSpicy: menuItem.isSpicy
+                            )
+                            cartManager.addItem(menuItem: customMenuItem)
+                        } else {
+                            // 添加普通价格菜品
+                            addAction()
+                        }
+                        
                         // 重置动画状态
                         withAnimation {
                             animatingAdd = false
@@ -118,6 +185,13 @@ struct MenuItemCard: View {
                     .offset(animationOffset)
                     .opacity(animatingAdd ? 1 : 0)
             }
+        }
+        .sheet(isPresented: $showingPriceOptions) {
+            PriceOptionsView(
+                options: priceOptions,
+                selectedOption: $selectedPriceOption,
+                itemName: menuItem.name
+            )
         }
     }
 }
@@ -279,6 +353,49 @@ struct SimpleSubstitutionView: View {
                 }
             }
             .navigationBarTitle("菜品更换", displayMode: .inline)
+            .navigationBarItems(trailing: Button("取消") {
+                presentationMode.wrappedValue.dismiss()
+            })
+        }
+    }
+}
+
+// 价格选项选择视图
+struct PriceOptionsView: View {
+    let options: [(key: String, value: Double)]
+    @Binding var selectedOption: (key: String, value: Double)?
+    let itemName: String
+    @Environment(\.presentationMode) var presentationMode
+    
+    var body: some View {
+        NavigationView {
+            List {
+                Section(header: Text("选择价格规格")) {
+                    ForEach(options, id: \.key) { option in
+                        Button(action: {
+                            selectedOption = option
+                            presentationMode.wrappedValue.dismiss()
+                        }) {
+                            HStack {
+                                Text(option.key)
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                Text("$\(String(format: "%.2f", option.value))")
+                                    .foregroundColor(.blue)
+                                    .fontWeight(.semibold)
+                                
+                                if selectedOption?.key == option.key {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationBarTitle("\(itemName) - 价格选择", displayMode: .inline)
             .navigationBarItems(trailing: Button("取消") {
                 presentationMode.wrappedValue.dismiss()
             })

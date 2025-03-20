@@ -68,8 +68,18 @@ struct MenuItem: Identifiable {
             case .options(let options):
                 if options.count == 1, let price = options.values.first {
                     return String(format: "$%.2f", price)
+                } else if options.isEmpty {
+                    return "价格待定"
                 } else {
-                    return "Various"
+                    // 当有多个价格选项时，显示价格范围
+                    let sortedPrices = options.values.sorted()
+                    if let minPrice = sortedPrices.first, let maxPrice = sortedPrices.last, minPrice != maxPrice {
+                        return String(format: "$%.2f - $%.2f", minPrice, maxPrice)
+                    } else if let price = sortedPrices.first {
+                        return String(format: "$%.2f", price)
+                    } else {
+                        return "价格待定"
+                    }
                 }
             }
         }
@@ -84,6 +94,16 @@ struct MenuItem: Identifiable {
                 } else {
                     return 0.0
                 }
+            }
+        }
+        
+        // 返回价格选项列表
+        var priceOptions: [(key: String, value: Double)] {
+            switch self {
+            case .fixed(let price):
+                return [("标准", price)]
+            case .options(let options):
+                return options.map { (key: $0.key, value: $0.value) }.sorted(by: { $0.value < $1.value })
             }
         }
     }
