@@ -52,8 +52,16 @@ class CartManager: ObservableObject {
     
     // Add item to cart
     func addItem(menuItem: MenuItem, quantity: Int = 1, notes: String = "", extraCharge: Double = 0.0, substitution: String = "") {
+        // 标准化替换信息，确保替换和价格信息正确关联
+        let cleanSubstitution = substitution.isEmpty && extraCharge != 0 ? 
+                             (extraCharge > 0 ? "补差价" : "减价") : 
+                             substitution
+        
+        // 不再修改 MenuItem 的价格，保持原价
+        // 差价通过 CartItem 的 extraCharge 字段单独记录
+        
         // Check if item already exists in cart
-        if let index = items.firstIndex(where: { $0.menuItem.id == menuItem.id && $0.notes == notes && $0.extraCharge == extraCharge && $0.substitution == substitution }) {
+        if let index = items.firstIndex(where: { $0.menuItem.id == menuItem.id && $0.notes == notes && $0.extraCharge == extraCharge && $0.substitution == cleanSubstitution }) {
             // If all properties match, update quantity
             items[index].quantity += quantity
         } else {
@@ -63,9 +71,12 @@ class CartManager: ObservableObject {
                 quantity: quantity, 
                 notes: notes,
                 extraCharge: extraCharge,
-                substitution: substitution
+                substitution: cleanSubstitution
             ))
         }
+        
+        // 强制触发UI更新
+        objectWillChange.send()
     }
     
     // Update item quantity - 强制更新数量，不使用max函数

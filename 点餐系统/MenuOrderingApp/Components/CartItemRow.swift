@@ -37,19 +37,62 @@ struct CartItemRow: View {
                         }
                     }
                     
-                    // 只有当不是纯补差价项目时才显示基础价格
+                    // 在显示价格的部分，添加原始价格和差价的显示
                     if item.menuItem.code != "EXTRA" {
-                        Text(item.menuItem.displayPrice)
-                            .font(.subheadline)
-                            .foregroundColor(.blue)
+                        if item.extraCharge != 0 {
+                            VStack(alignment: .leading, spacing: 2) {
+                                // 显示更新后的价格（已包含差价）
+                                Text("\(item.menuItem.displayPrice)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.blue)
+                                    .fontWeight(.medium)
+                                
+                                // 显示价格差异
+                                HStack {
+                                    let originalPrice = item.menuItem.primaryPrice - item.extraCharge
+                                    Text("原价: $\(String(format: "%.2f", originalPrice))")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                    
+                                    if item.extraCharge > 0 {
+                                        Text("差价: +$\(String(format: "%.2f", item.extraCharge))")
+                                            .font(.caption2)
+                                            .foregroundColor(.red)
+                                    } else {
+                                        Text("差价: -$\(String(format: "%.2f", abs(item.extraCharge)))")
+                                            .font(.caption2)
+                                            .foregroundColor(.green)
+                                    }
+                                }
+                            }
+                        } else {
+                            // 普通价格显示（无差价）
+                            Text(item.menuItem.displayPrice)
+                                .font(.subheadline)
+                                .foregroundColor(.blue)
+                        }
                     }
                     
                     // 显示替换信息
                     if !item.substitution.isEmpty {
-                        Text(item.substitution)
-                            .font(.caption)
-                            .foregroundColor(.orange)
-                            .lineLimit(2)
+                        if item.substitution.contains("\n") {
+                            // 多行替换信息，使用VStack显示每一行
+                            VStack(alignment: .leading, spacing: 2) {
+                                ForEach(item.substitution.components(separatedBy: "\n"), id: \.self) { line in
+                                    Text(line)
+                                        .font(.caption)
+                                        .foregroundColor(.orange)
+                                        .lineLimit(1)
+                                }
+                            }
+                            .padding(.vertical, 2)
+                        } else {
+                            // 单行替换信息
+                            Text(item.substitution)
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                                .lineLimit(2)
+                        }
                     }
                     
                     // 显示额外收费

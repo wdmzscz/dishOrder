@@ -9,6 +9,7 @@ struct CartItem: Identifiable, Equatable {
     var substitution: String = ""
     
     var subtotal: Double {
+        // 计算小计时正确应用差价：原价 + 差价 × 数量
         return (menuItem.primaryPrice + extraCharge) * Double(quantity)
     }
     
