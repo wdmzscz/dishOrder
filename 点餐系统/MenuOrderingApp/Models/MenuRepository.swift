@@ -11,7 +11,7 @@ MenuItem(
     category: .familyDinner,
     subcategory: nil,
     description: "Wonton Soup, Egg Rolls, Chicken Chop Suey, Sweet & Sour Chicken Balls, Chicken Fried Rice & Cookies",
-    items: ["Wonton Soup - Egg Rolls", "Chicken Chop Suey - Sweet & Sour Chicken Balls", "Chicken Fried Rice & Cookies"],
+    items: ["Wonton Soup","Egg Rolls", "Chicken Chop Suey","Sweet & Sour Chicken Balls", "Chicken Fried Rice & Cookies"],
     isSpicy: false
 ),
 MenuItem(
@@ -20,7 +20,7 @@ MenuItem(
     category: .familyDinner,
     subcategory: nil,
     description: "Wonton Soup, Egg Rolls, Chicken Chop Suey, Sweet & Sour Chicken Balls, Beef with Mixed Vegetables, Chicken Fried Rice & Cookies",
-    items: ["Wonton Soup - Egg Rolls", "Chicken Chop Suey - Sweet & Sour Chicken Balls", "Beef with Mixed Vegetables", "Chicken Fried Rice & Cookies"],
+    items: ["Wonton Soup","Egg Rolls", "Chicken Chop Suey","Sweet & Sour Chicken Balls", "Beef with Mixed Vegetables", "Chicken Fried Rice & Cookies"],
     isSpicy: false
 ),
 MenuItem(
@@ -29,7 +29,7 @@ MenuItem(
     category: .familyDinner,
     subcategory: nil,
     description: "Wonton Soup, Egg Rolls, Breaded Shrimp, Chicken Chop Suey, Beef with Mixed Vegetables, Sweet & Sour Chicken Balls, Chicken Fried Rice & Cookies",
-    items: ["Wonton Soup - Egg Rolls", "Breaded Shrimp - Chicken Chop Suey", "Beef with Mixed Vegetables", "Sweet & Sour Chicken Balls", "Chicken Fried Rice & Cookies"],
+    items: ["Wonton Soup" ,"Egg Rolls", "Breaded Shrimp","Chicken Chop Suey", "Beef with Mixed Vegetables", "Sweet & Sour Chicken Balls", "Chicken Fried Rice & Cookies"],
     isSpicy: false
 ),
 MenuItem(
@@ -38,7 +38,7 @@ MenuItem(
     category: .familyDinner,
     subcategory: nil,
     description: "Wonton Soup, Egg Rolls, Breaded Shrimp, Chicken Chow Mein, Beef with Mixed Vegetables, Sweet & Sour Chicken Balls, Chicken Lo Mein, Chicken Fried Rice & Cookies",
-    items: ["Wonton Soup - Egg Rolls", "Breaded Shrimp - Chicken Chow Mein", "Beef with Mixed Vegetables", "Sweet & Sour Chicken Balls - Chicken Lo Mein", "Chicken Fried Rice & Cookies"],
+    items: ["Wonton Soup","Egg Rolls", "Breaded Shrimp","Chicken Chow Mein", "Beef with Mixed Vegetables", "Sweet & Sour Chicken Balls", "Chicken Lo Mein", "Chicken Fried Rice & Cookies"],
     isSpicy: false
 ),
 MenuItem(
@@ -47,7 +47,7 @@ MenuItem(
     category: .familyDinner,
     subcategory: nil,
     description: "Wonton Soup, Egg Rolls, Breaded Shrimp, Beef Chop Suey, Chicken Chow Mein, Honey Garlic Spareribs, Sweet & Sour Chicken Balls, Cantonese Lo Mein, Chicken Fried Rice & Cookies",
-    items: ["Wonton Soup - Egg Rolls", "Breaded Shrimp - Beef Chop Suey", "Chicken Chow Mein - Honey Garlic Spareribs", "Sweet & Sour Chicken Balls - Cantonese Lo Mein", "Chicken Fried Rice & Cookies"],
+    items: ["Wonton Soup","Egg Rolls", "Breaded Shrimp","Beef Chop Suey", "Chicken Chow Mein","Honey Garlic Spareribs", "Sweet & Sour Chicken Balls", "Cantonese Lo Mein", "Chicken Fried Rice & Cookies"],
     isSpicy: false
 ),
 
@@ -318,7 +318,7 @@ MenuItem(
     category: .deluxeDinner,
     subcategory: nil,
     description: "Wonton Soup, Egg Rolls, Chicken Chow Mein, Beef With Mixed Vegetables, Sweet & Sour Chicken Balls, Chicken Fried Rice & Cookies",
-    items: ["Wonton Soup, Egg Rolls", "Chicken Chow Mein - Beef With Mixed Vegetables", "Sweet & Sour Chicken Balls", "Chicken Fried Rice & Cookies"],
+    items: ["Wonton Soup", "Egg Rolls", "Chicken Chow Mein" , "Beef With Mixed Vegetables", "Sweet & Sour Chicken Balls", "Chicken Fried Rice & Cookies"],
     isSpicy: false
 ),
 MenuItem(
@@ -328,7 +328,7 @@ MenuItem(
     category: .deluxeDinner,
     subcategory: nil,
     description: "Wonton Soup, Egg Rolls, Dry Garlic Spareribs, General Tao's Chicken (spicy), Beef with Mixed Vegetables, Chicken Fried Rice & Cookies",
-    items: ["Wonton Soup, Egg Rolls", "Dry Garlic Spareribs - General Tao's Chicken (spicy)", "Beef with Mixed Vegetables", "Chicken Fried Rice & Cookies"],
+    items: ["Wonton Soup", "Egg Rolls", "Dry Garlic Spareribs", "General Tao's Chicken (spicy)", "Beef with Mixed Vegetables", "Chicken Fried Rice & Cookies"],
     isSpicy: true
 ),
 MenuItem(
@@ -338,7 +338,7 @@ MenuItem(
     category: .deluxeDinner,
     subcategory: nil,
     description: "Wonton Soup, Egg Rolls, Dry Garlic Spareribs, General Tao's Chicken (spicy), Beef w/ Mixed Vegetables, Szechuan Shrimp (spicy), Chicken Fried Rice & Cookies",
-    items: ["Wonton Soup, Egg Rolls", "Dry Garlic Spareribs - General Tao's Chicken (spicy)", "Beef w/ Mixed Vegetables - Szechuan Shrimp (spicy)", "Chicken Fried Rice & Cookies"],
+    items: ["Wonton Soup", "Egg Rolls", "Dry Garlic Spareribs", "General Tao's Chicken (spicy)", "Beef w/ Mixed Vegetables", "Szechuan Shrimp (spicy)", "Chicken Fried Rice & Cookies"],
     isSpicy: true
 ),
 MenuItem(
@@ -348,7 +348,7 @@ MenuItem(
     category: .deluxeDinner,
     subcategory: nil,
     description: "Wonton Soup, Egg Rolls, Dry Garlic Spareribs, General Tao's Chicken (spicy), Crispy Ginger Beef (spicy), Beef w/ Mixed Vegetables, Cantonese Lo Mein, Szechuan Shrimp (spicy), Chicken Fried Rice & Cookies",
-    items: ["Wonton Soup, Egg Rolls", "Dry Garlic Spareribs - General Tao's Chicken (spicy)", "Crispy Ginger Beef (spicy) - Beef w/ Mixed Vegetables", "Cantonese Lo Mein - Szechuan Shrimp (spicy)", "Chicken Fried Rice & Cookies"],
+    items: ["Wonton Soup", "Egg Rolls", "Dry Garlic Spareribs", "General Tao's Chicken (spicy)", "Crispy Ginger Beef (spicy)", "Beef w/ Mixed Vegetables", "Cantonese Lo Mein", "Szechuan Shrimp (spicy)", "Chicken Fried Rice & Cookies"],
     isSpicy: true
 ),
 
