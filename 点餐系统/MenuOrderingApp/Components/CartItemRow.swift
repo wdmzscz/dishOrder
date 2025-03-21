@@ -341,8 +341,23 @@ struct CartItemRow: View {
                         }
                         .padding(.top, 4)
                         
-                        TextField("原因说明 (例：更换菜品)", text: $substitutionReason)
-                            .disableAutocorrection(true)
+                        // 替换信息区域 - 使用TextEditor而非TextField以支持多行显示
+                        if substitutionReason.contains("更换:") {
+                            Text("菜品替换信息")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.top, 8)
+                            
+                            TextEditor(text: $substitutionReason)
+                                .frame(minHeight: 100)
+                                .font(.caption)
+                                .padding(4)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
+                        } else {
+                            TextField("原因说明 (例：更换菜品)", text: $substitutionReason)
+                                .disableAutocorrection(true)
+                        }
                     }
                 }
                 .navigationBarTitle("调整价格", displayMode: .inline)
