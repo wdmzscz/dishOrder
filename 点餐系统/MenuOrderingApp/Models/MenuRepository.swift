@@ -613,7 +613,7 @@ MenuItem(
     isSpicy: true
 ),
 MenuItem(
-    id: "VG02", code: "VG02", name: "Stir Fried Tender Green Vegetable",
+    id: "VG02", code: "VG02", name: "Sauteed Three Kinds Vegetables",
     price: .fixed(13.95),
     category: .vegetable,
     subcategory: nil,
@@ -622,7 +622,7 @@ MenuItem(
     isSpicy: false
 ),
 MenuItem(
-    id: "VG03", code: "VG03", name: "Stir Fried Mixed Vegetables",
+    id: "VG03", code: "VG03", name: "Sauteed Mixed Vegetables",
     price: .fixed(12.95),
     category: .vegetable,
     subcategory: nil,
@@ -714,7 +714,7 @@ MenuItem(
     isSpicy: false
 ),
 MenuItem(
-    id: "BF09", code: "BF09", name: "Spicy Beef (Hot)",
+    id: "BF09", code: "BF09", name: "Stay Beef (Hot)",
     price: .fixed(15.95),
     category: .beef,
     subcategory: nil,
@@ -860,7 +860,7 @@ MenuItem(
     isSpicy: true
 ),
 MenuItem(
-    id: "CH10", code: "CH10", name: "Spicy Chicken (Hot)",
+    id: "CH10", code: "CH10", name: "Stay Chicken (Hot)",
     price: .fixed(15.95),
     category: .chicken,
     subcategory: nil,
