@@ -37,8 +37,8 @@ MenuItem(
     price: .fixed(74.95),
     category: .familyDinner,
     subcategory: nil,
-    description: "Wonton Soup, Egg Rolls, Breaded Shrimp, Chicken Chow Mein, Beef with Mixed Vegetables, Sweet & Sour Chicken Balls, Chicken Lo Mein, Chicken Fried Rice & Cookies",
-    items: ["Wonton Soup","Egg Rolls", "Breaded Shrimp","Chicken Chow Mein", "Beef with Mixed Vegetables", "Sweet & Sour Chicken Balls", "Chicken Lo Mein", "Chicken Fried Rice & Cookies"],
+    description: "Wonton Soup, Egg Rolls, Breaded Shrimp, Chicken Soo Guy, Beef with Mixed Vegetables, Sweet & Sour Chicken Balls, Chicken Lo Mein, Chicken Fried Rice & Cookies",
+    items: ["Wonton Soup","Egg Rolls", "Breaded Shrimp","Chicken Soo Guy", "Beef with Mixed Vegetables", "Sweet & Sour Chicken Balls", "Chicken Lo Mein", "Chicken Fried Rice & Cookies"],
     isSpicy: false
 ),
 MenuItem(
@@ -46,8 +46,8 @@ MenuItem(
     price: .fixed(87.95),
     category: .familyDinner,
     subcategory: nil,
-    description: "Wonton Soup, Egg Rolls, Breaded Shrimp, Beef Chop Suey, Chicken Chow Mein, Honey Garlic Spareribs, Sweet & Sour Chicken Balls, Cantonese Lo Mein, Chicken Fried Rice & Cookies",
-    items: ["Wonton Soup","Egg Rolls", "Breaded Shrimp","Beef Chop Suey", "Chicken Chow Mein","Honey Garlic Spareribs", "Sweet & Sour Chicken Balls", "Cantonese Lo Mein", "Chicken Fried Rice & Cookies"],
+    description: "Wonton Soup, Egg Rolls, Breaded Shrimp, Beef Chop Suey, Chicken Soo Guy, Honey Garlic Spareribs, Sweet & Sour Chicken Balls, Cantonese Lo Mein, Chicken Fried Rice & Cookies",
+    items: ["Wonton Soup","Egg Rolls", "Breaded Shrimp","Beef Chop Suey", "Chicken Soo Guy","Honey Garlic Spareribs", "Sweet & Sour Chicken Balls", "Cantonese Lo Mein", "Chicken Fried Rice & Cookies"],
     isSpicy: false
 ),
 
@@ -84,8 +84,8 @@ MenuItem(
     price: .fixed(97.95),
     category: .authenticDinner,
     subcategory: nil,
-    description: "6 Wonton Soup, 6 Spring Rolls, Emperor Beef with Bean Sauce, Sweet & Sour Chicken (Hong Kong Style), Lemon Chicken, Shrimp with Vegetables, Singapore Noodles (spicy), Spicy Potatoes (spicy), Chicken Fried Rice & Cookies",
-    items: ["6 Wonton Soup, 6 Spring Rolls", "Emperor Beef with Bean Sauce", "Sweet & Sour Chicken (Hong Kong Style)", "Lemon Chicken", "Shrimp with Vegetables", "Singapore Noodles (spicy)", "Spicy Potatoes (spicy)", "Chicken Fried Rice & Cookies"],
+    description: "6 Wonton Soup, 6 Spring Rolls, Emperor Beef with Bean Sauce, Sweet & Sour Chicken (Hong Kong Style), Lemon Chicken, Shrimp with Vegetables, Singapore Noodles (spicy), Spicy Pork Chops (spicy), Chicken Fried Rice & Cookies",
+    items: ["6 Wonton Soup, 6 Spring Rolls", "Emperor Beef with Bean Sauce", "Sweet & Sour Chicken (Hong Kong Style)", "Lemon Chicken", "Shrimp with Vegetables", "Singapore Noodles (spicy)", "Spicy Pork Chops (spicy)", "Chicken Fried Rice & Cookies"],
     isSpicy: true
 ),
        // MARK: - Combination Dinner for One
@@ -101,7 +101,7 @@ MenuItem(
 ),
 MenuItem(
     id: "CD02", code: "CD02", 
-    name: "No. 2: Chicken Chow Mein & Chicken Chop Suey",
+    name: "No. 2: Chicken Soo Guy & Chicken Chop Suey",
     price: .fixed(14.45),
     category: .combinationDinner,
     subcategory: nil,
@@ -121,7 +121,7 @@ MenuItem(
 ),
 MenuItem(
     id: "CD04", code: "CD04", 
-    name: "No. 4: Chicken Chow Mein",
+    name: "No. 4: Chicken Soo Guy",
     price: .fixed(14.45),
     category: .combinationDinner,
     subcategory: nil,
@@ -201,7 +201,7 @@ MenuItem(
 ),
 MenuItem(
     id: "CD12", code: "CD12", 
-    name: "No. 12: Sweet & Sour Chicken Ball & Chicken Chow Mein",
+    name: "No. 12: Sweet & Sour Chicken Ball & Chicken Soo Guy",
     price: .fixed(14.45),
     category: .combinationDinner,
     subcategory: nil,
@@ -317,8 +317,8 @@ MenuItem(
     price: .fixed(35.95),
     category: .deluxeDinner,
     subcategory: nil,
-    description: "Wonton Soup, Egg Rolls, Chicken Chow Mein, Beef With Mixed Vegetables, Sweet & Sour Chicken Balls, Chicken Fried Rice & Cookies",
-    items: ["Wonton Soup", "Egg Rolls", "Chicken Chow Mein" , "Beef With Mixed Vegetables", "Sweet & Sour Chicken Balls", "Chicken Fried Rice & Cookies"],
+    description: "Wonton Soup, Egg Rolls, Chicken Soo Guy, Beef With Mixed Vegetables, Sweet & Sour Chicken Balls, Chicken Fried Rice & Cookies",
+    items: ["Wonton Soup", "Egg Rolls", "Chicken Soo Guy" , "Beef With Mixed Vegetables", "Sweet & Sour Chicken Balls", "Chicken Fried Rice & Cookies"],
     isSpicy: false
 ),
 MenuItem(
@@ -373,7 +373,7 @@ MenuItem(
 ),
 MenuItem(
     id: "AP03", code: "AP03", name: "Fried Wonton",
-    price: .options(["9 pieces": 5.25, "14 pieces": 8.75]),
+    price: .options(["8 pieces": 5.25, "14 pieces": 8.75]),
     category: .appetizer,
     subcategory: nil,
     description: "Deep-fried pork wonton",
@@ -400,7 +400,7 @@ MenuItem(
 ),
 MenuItem(
     id: "AP06", code: "AP06", name: "Fried Beef Dumpling",
-    price: .options(["9 pieces": 5.25, "12 pieces": 8.75]),
+    price: .options(["6 pieces": 5.25, "12 pieces": 8.75]),
     category: .appetizer,
     subcategory: nil,
     description: "Pan-fried beef dumplings",
@@ -502,7 +502,7 @@ MenuItem(
 ),
 MenuItem(
     id: "CS03", code: "CS03", name: "Chicken Chop Suey",
-    price: .fixed(14.95),
+    price: .fixed(12.95),
     category: .chopSuey,
     subcategory: nil,
     description: "Chicken with mixed vegetables",
@@ -520,7 +520,7 @@ MenuItem(
 ),
 MenuItem(
     id: "CS05", code: "CS05", name: "Shrimp Chop Suey",
-    price: .fixed(15.95),
+    price: .fixed(14.95),
     category: .chopSuey,
     subcategory: nil,
     description: "Shrimp with mixed vegetables",
@@ -585,7 +585,7 @@ MenuItem(
 ),
 MenuItem(
     id: "EF05", code: "EF05", name: "Shrimp Egg Foo Young",
-    price: .fixed(12.95),
+    price: .fixed(14.95),
     category: .eggFooYoung,
     subcategory: nil,
     description: "Shrimp omelette with gravy",
@@ -788,7 +788,7 @@ MenuItem(
     isSpicy: false
 ),
 MenuItem(
-    id: "CH02", code: "CH02", name: "Chicken Chow Mein",
+    id: "CH02", code: "CH02", name: "Chicken Soo Guy",
     price: .fixed(14.95),
     category: .chicken,
     subcategory: nil,
@@ -1126,7 +1126,7 @@ MenuItem(
 ),
 MenuItem(
     id: "SS07", code: "SS07", name: "Sweet & Sour Sauce",
-    price: .fixed(15.95),
+    price: .fixed(2.50),
     category: .sweetAndSour,
     subcategory: nil,
     description: "Extra portion of sauce",
@@ -1143,7 +1143,7 @@ MenuItem(
     isSpicy: false
 ),
 MenuItem(
-    id: "SS09", code: "SS09", name: "Pickled Pork Chops",
+    id: "SS09", code: "SS09", name: "Peking Pork Chops",
     price: .fixed(15.95),
     category: .sweetAndSour,
     subcategory: nil,
@@ -1218,7 +1218,7 @@ MenuItem(
 ),
 MenuItem(
     id: "FN05", code: "FN05", name: "Vegetable Chow Mein or Lo Mein",
-    price: .fixed(15.95),
+    price: .fixed(13.95),
     category: .noodle,
     subcategory: nil,
     description: "Vegetarian noodles",
@@ -1356,7 +1356,7 @@ MenuItem(
     isSpicy: false
 ),
 MenuItem(
-    id: "CF02", code: "CF02", name: "Moo Shu Bean Curd with Minced Pork (Hot)",
+    id: "CF02", code: "CF02", name: "Moo Poo Bean Curd with Minced Pork (Hot)",
     price: .fixed(14.95),
     category: .chefSuggestion,
     subcategory: nil,
@@ -1438,7 +1438,7 @@ MenuItem(
 ),
 MenuItem(
     id: "CF11", code: "CF11", name: "Spicy Garlic Pork Chops (Hot)",
-    price: .fixed(13.95),
+    price: .fixed(15.95),
     category: .chefSuggestion,
     subcategory: nil,
     description: "Pork chops with garlic chili sauce",
@@ -1446,7 +1446,7 @@ MenuItem(
     isSpicy: true
 ),
 MenuItem(
-    id: "CF12", code: "CF12", name: "Tai Chop Suey",
+    id: "CF12", code: "CF12", name: "Tai Chop Voy",
     price: .fixed(16.95),
     category: .chefSuggestion,
     subcategory: nil,
